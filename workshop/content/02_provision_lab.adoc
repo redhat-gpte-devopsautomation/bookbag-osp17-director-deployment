@@ -1,0 +1,164 @@
+:GUID: %guid%
+:OSP_DOMAIN: %dns_zone%
+:GITLAB_URL: %gitlab_url%
+:GITLAB_USERNAME: %gitlab_username%
+:GITLAB_PASSWORD: %gitlab_password%
+:GITLAB_HOST: %gitlab_hostname%
+:TOWER_URL: %tower_url%
+:TOWER_ADMIN_USER: %tower_admin_user%
+:TOWER_ADMIN_PASSWORD: %tower_admin_password%
+:SSH_COMMAND: %ssh_command%
+:SSH_PASSWORD: %ssh_password%
+:VSCODE_UI_URL: %vscode_ui_url%
+:VSCODE_UI_PASSWORD: %vscode_ui_password%
+:organization_name: Default
+:gitlab_project: ansible/gitops-lab
+:project_prod: Project gitOps - Prod
+:project_test: Project gitOps - Test
+:inventory_prod: GitOps inventory - Prod Env
+:inventory_test: GitOps inventory - Test Env
+:credential_machine: host_credential
+:credential_git: gitlab_credential
+:credential_git_token: gitlab_token 
+:credential_openstack: cloud_credential
+:jobtemplate_prod: App deployer - Prod Env
+:jobtemplate_test: App deployer - Test Env
+:source-linenums-option:        
+:markup-in-source: verbatim,attributes,quotes
+:show_solution: true
+:catalog_name: OpenShift 4 Advanced Infra Deploy ILT
+:course_name: Advanced Red Hat OpenShift Container Platform Deployment and Management
+:opentlc_portal: link:https://labs.opentlc.com/[OPENTLC lab portal^]
+:opentlc_account_management: link:https://www.opentlc.com/account/[OPENTLC Account Management page^]
+:opentlc_catalog_name: OPENTLC OpenShift 4 Labs
+:opentlc_catalog_item_name_aws: OpenShift 4 Advanced Infra Deploy ILT
+:ocp4_docs: link:https://docs.openshift.com/container-platform/4.11/welcome/index.html[OpenShift Container Platform Documentation]
+
+== Provision Lab Environment
+
+[CAUTION]
+====
+Thre are two possible cloud providers for this course. These are the instructions for the class environment on *Amazon Web Services (AWS)*. Make sure this is the environment that you want for this class. If in doubt ask your instructor!!
+====
+
+[NOTE]
+If you previously set up an environment for this class, you can skip this section and go directly to the <<Test Server Connections>> section.
+
+In this section, you provision the lab environment to provide access to all of the components required to perform the labs. The lab environment is a shared cloud-based environment, so that you can access it over the Internet from anywhere. However, do not expect performance to match a dedicated environment.
+
+. Go to the {opentlc_portal} and use your OPENTLC credentials to log in.
++
+[TIP]
+If you do not remember your password, go to the {opentlc_account_management} to reset your password.
+
+. Navigate to *Services -> Catalogs -> All Services -> {opentlc_catalog_name}*.
+. On the left, select *{opentlc_catalog_item_name_aws}*.
+. On the right, click *Order*.
+//. If the interface offers it to you, and you are not in North America, click *Lab Parameters* and select your appropriate region.
+. On the bottom right, click *Submit*.
++
+[WARNING]
+Do not select *App Control -> Start* after ordering the lab. Ordering the lab automatically begins the build process. Selecting *Start* may corrupt the lab environment or cause other complications.
+
+* After a few minutes, expect to receive an email with instructions on how to connect to the environment.
+. You will receive three e-mails:
++
+.Provisioning started
+[source,texinfo]
+----
+Thank you for ordering OpenShift 4 Advanced Infra Deploy ILT.
+Provisioning has started on your Red Hat OPENTLC OTLC-LAB-<OpenTLC ID>-PROD_ILT_OCP4_ADVANCED_INFRA_DEPLOY-<GUID> environment.
+You will receive more information via email during the build process within the next 30 minutes.
+----
++
+.Provisioning has updated (this means that the VMs have been requested successfully)
+[source,texinfo]
+----
+Thank you for ordering OpenShift 4 Advanced Infra Deploy ILT.
+Provisioning is continuing for Red Hat OPENTLC service OTLC-LAB-<OpenTLC ID>-PROD_ILT_OCP4_ADVANCED_INFRA_DEPLOY-<GUID>.
+You will receive another email when the environment is available within the next 75 minutes.
+----
++
+.Provisioning completed
+[source,texinfo]
+----
+Thank you for ordering OpenShift 4 Advanced Infra Deploy ILT
+Your environment for OTLC-LAB-<OpenTLC ID>-PROD_ILT_OCP4_ADVANCED_INFRA_DEPLOY-<GUID>_COMPLETED has been provisioned.
+Access to the environment will be granted as soon as the environment deployment is complete.
+
+Please refer to the instructions for next steps and how to access your environment.
+
+Troubleshooting and Access issues:
+
+Always refer to the instructions to understand how to properly access and navigate your environment. If you need help using the SSH client on your computer you can consult http://www.opentlc.com/ssh.html.
+
+NOTICE: Your environment will expire and be deleted in 7 day(s) at 2021-02-27 00:00:00 -0500.
+
+In order to conserve resources, we cannot archive or restore any data in this environment. All data will be lost upon expiration.
+---
+
+Here is some important information about your environment:
+
+Top level domain: .sandboxNNNN.opentlc.com
+
+WARNING: with great power comes great responsibility. We monitor usage.
+Your AWS programmatic access:
+aws_access_key_id = <AWS Access Key>
+aws_secret_access_key = <AWS Secret Access Key>
+
+SSH Access: ssh <OpenTLC ID>@bastion.<GUID>.sandboxNNNN.opentlc.com
+SSH password: <Generated Password>
+---
+
+Here is some important information about your environment:
+
+You can access your bastion via SSH:
+ssh <OpenTLC ID>@bastion.<GUID>.sandboxNNNN.opentlc.com
+
+Make sure you use the username '<OpenTLC User Name>' and the password '<Generated Password>' when prompted.
+
+Your base domain is 'sandboxNNNN.opentlc.com' (where NNNN is a 3 or 4 digit number)
+----
++
+. Wait until you receive the final e-mail before trying to connect to your environment.
+. Note the GUID (a 4 character ID) of your environment.
+. Note the Top Level domain (`sandboxNNNN.opentlc.com` in the example above)
+. Note the command to SSH into your bastion.
+. Finally note the SSH password for your user ID. *This password is different from your regular OpenTLC password!*
+
+=== Start Environment After Shut Down
+
+To conserve resources, the lab environment shuts down automatically after eight hours. In this section, you restart the lab environment for this course after it has shut down automatically.
+
+. Go to the {opentlc_portal} and use your OPENTLC credentials to log in.
+. Navigate to *Services -> My Services* (this should be the screen shown right after logging in).
+. In the list of your services, select your lab environment.
+. Select *App Control -> Start* to start your lab environment.
+. Select *Yes* at the *Are you sure?* prompt.
+. On the bottom right, click *Submit*.
+
+After a few minutes, expect to receive an email letting you know that the lab environment has been started.
+
+=== Test Server Connections
+
+The `bastion` administration host serves as an access point into the environment and is not part of the OpenShift environment.
+
+. Connect to your administration host and make sure you can access your provisioned host:
++
+[source,sh]
+----
+ssh <OpenTLC ID>@bastion.<GUID>.sandboxNNNN.opentlc.com
+----
++
+. Validate that the GUID variable is set correctly for your environment:
++
+[source,sh]
+----
+echo $GUID
+----
++
+.Sample Output
+[source,texinfo]
+----
+c3po
+----

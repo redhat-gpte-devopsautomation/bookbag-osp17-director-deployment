@@ -1,0 +1,18 @@
+:markup-in-source: verbatim,attributes,quotes
+
+= OpenShift UPI Disconnected Deployment (AWS)
+
+NOTE: This project is based on OpenShift Homeroom: https://github.com/openshift-homeroom.
+This repository is based on https://github.com/openshift-homeroom/lab-asciidoc-sample.
+If you are using OpenShift Homeroom project already, please continue using it.
+If you want to integrate it with AgnosticD and Babylon, follow the instructions in 
+<<For the existing Homeroom users>>
+
+== Overview
+
+In this hands on lab you will:
+
+* Create container registry
+* Mirror container images
+* Generate OpenShift install artifacts
+* Deploy OpenShift 4 on AWS

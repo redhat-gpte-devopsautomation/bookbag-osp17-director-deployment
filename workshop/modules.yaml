@@ -1,0 +1,25 @@
+---
+modules:
+  01_goals:
+    name: OpenShift UPI Offline AWS
+    exit_sign: Provision Lab Environment
+  02_provision_lab:
+    name: Provision Lab Environment
+    exit_sign: Overview
+  03_overview:
+    name: Overview
+    exit_sign: Restricted Network
+  04_restricted_network:
+    name: Restricted Network
+    exit_sign: Environment Overview
+  05_environment_overview:
+    name: Environment Overview
+    exit_sign: Prepare Environment
+  06_prepare_environment:
+    name: Prepare Environment
+    exit_sign: OpenShift Installation
+  07_openshift_installation:
+    name: OpenShift Installation
+    exit_sign: Appendicies
+  08_appendicies:
+    name: Appendicies

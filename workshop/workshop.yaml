@@ -1,0 +1,13 @@
+---
+name: OpenShift UPI Offline AWS
+modules:
+  activate:
+    -  01_goals
+    -  02_provision_lab    
+    -  03_overview
+    -  04_restricted_network
+    -  05_environment_overview
+    -  06_prepare_environment
+    -  07_openshift_installation
+    -  08_appendicies
+    

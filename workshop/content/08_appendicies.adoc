@@ -1,0 +1,77 @@
+:GUID: %guid%
+:OSP_DOMAIN: %dns_zone%
+:GITLAB_URL: %gitlab_url%
+:GITLAB_USERNAME: %gitlab_username%
+:GITLAB_PASSWORD: %gitlab_password%
+:GITLAB_HOST: %gitlab_hostname%
+:TOWER_URL: %tower_url%
+:TOWER_ADMIN_USER: %tower_admin_user%
+:TOWER_ADMIN_PASSWORD: %tower_admin_password%
+:SSH_COMMAND: %ssh_command%
+:SSH_PASSWORD: %ssh_password%
+:VSCODE_UI_URL: %vscode_ui_url%
+:VSCODE_UI_PASSWORD: %vscode_ui_password%
+:organization_name: Default
+:gitlab_project: ansible/gitops-lab
+:project_prod: Project gitOps - Prod
+:project_test: Project gitOps - Test
+:inventory_prod: GitOps inventory - Prod Env
+:inventory_test: GitOps inventory - Test Env
+:credential_machine: host_credential
+:credential_git: gitlab_credential
+:credential_git_token: gitlab_token 
+:credential_openstack: cloud_credential
+:jobtemplate_prod: App deployer - Prod Env
+:jobtemplate_test: App deployer - Test Env
+:source-linenums-option:        
+:markup-in-source: verbatim,attributes,quotes
+:show_solution: true
+:catalog_name: OpenShift 4 Advanced Infra Deploy ILT
+:course_name: Advanced Red Hat OpenShift Container Platform Deployment and Management
+:opentlc_portal: link:https://labs.opentlc.com/[OPENTLC lab portal^]
+:opentlc_account_management: link:https://www.opentlc.com/account/[OPENTLC Account Management page^]
+:opentlc_catalog_name: OPENTLC OpenShift 4 Labs
+:opentlc_catalog_item_name_aws: OpenShift 4 Advanced Infra Deploy ILT
+:ocp4_docs: link:https://docs.openshift.com/container-platform/4.11/welcome/index.html[OpenShift Container Platform Documentation]
+
+== Appendicies
+
+The following sections are *not required* to finish the lab and be prepared for the next lab.
+
+=== Appendix 1: Automated Solving and Resetting
+
+====
+
+WARNING: THE FOLLOWING STEPS WILL ERASE ALL YOUR WORK
+
+Use the steps here to either solve or reset this lab.
+
+Solving the lab will both reset (delete) whatever you currently have deployed and then do a full UPI disconnected installation.
+Resetting the lab will only reset and cleanup anything you currently have deployed so you can start fresh.
+
+NOTE: Resetting the lab requires the file `$HOME/aws-upi/metadata.json` to be present.
+
+. On your `bastion`, ensure you have the following:
+* Your OpenShift pull secret added to the `$HOME/ocp_pullsecret.json` file.
+You do not need the `merged_pullsecret.json` as the solver will create it for you.
+* Your AWS credentials (`$HOME/.aws/credentials`) as supplied in the environment deploy email
+
+. To solve the lab
++
+[source,options="nowrap"]
+----
+solve_lab ocp4_advanced_deployment 03_1aws
+----
++
+.. Open a new terminal to view logs in: `/tmp/ansible_solving.log`
+.. When installation is complete, access your cluster by loading in the `kube/config` file.
+Simply execute `source ~/.bashrc`
+
+. To *reset* the lab, and delete all your work, run the following command
++
+[source,options="nowrap"]
+----
+reset_lab ocp4_advanced_deployment 03_1aws
+----
+.. Open a new terminal to view logs in: `/tmp/ansible_resetting.log`
+====
