@@ -1,0 +1,850 @@
+:GUID: %guid%
+:OSP_DOMAIN: %dns_zone%
+:GITLAB_URL: %gitlab_url%
+:GITLAB_USERNAME: %gitlab_username%
+:GITLAB_PASSWORD: %gitlab_password%
+:GITLAB_HOST: %gitlab_hostname%
+:TOWER_URL: %tower_url%
+:TOWER_ADMIN_USER: %tower_admin_user%
+:TOWER_ADMIN_PASSWORD: %tower_admin_password%
+:SSH_COMMAND: %ssh_command%
+:SSH_PASSWORD: %ssh_password%
+:VSCODE_UI_URL: %vscode_ui_url%
+:VSCODE_UI_PASSWORD: %vscode_ui_password%
+:organization_name: Default
+:gitlab_project: ansible/gitops-lab
+:project_prod: Project gitOps - Prod
+:project_test: Project gitOps - Test
+:inventory_prod: GitOps inventory - Prod Env
+:inventory_test: GitOps inventory - Test Env
+:credential_machine: host_credential
+:credential_git: gitlab_credential
+:credential_git_token: gitlab_token 
+:credential_openstack: cloud_credential
+:jobtemplate_prod: App deployer - Prod Env
+:jobtemplate_test: App deployer - Test Env
+:source-linenums-option:        
+:markup-in-source: verbatim,attributes,quotes
+:show_solution: true
+:catalog_name: OpenShift 4 Advanced Infra Deploy ILT
+:course_name: Red Hat OpenStack 17
+:opentlc_portal: link:https://labs.opentlc.com/[OPENTLC lab portal^]
+:opentlc_account_management: link:https://www.opentlc.com/account/[OPENTLC Account Management page^]
+:opentlc_catalog_name: OPENTLC OpenShift 4 Labs
+:opentlc_catalog_item_name_aws: OpenShift 4 Advanced Infra Deploy ILT
+:ocp4_docs: link:https://docs.openshift.com/container-platform/4.11/welcome/index.html[OpenShift Container Platform Documentation]
+
+== Connect to Undercloud Node
+
+In this section, you log in to the workstation VM, distribute your SSH key to the undercloud node, and verify that you can connect to the undercloud node.
+
+. Log in to your workstation VM using your OPENTLC credentials and the hostname or IP address specified in the email message from OPENTLC:
++
+[source,sh]
+----
+$ ssh your-account@workstation.GUID.dynamic.opentlc.com
+----
+* The message includes a GUID--a unique four-character identifier generated for your lab environment.
+* Whenever you see "GUID" or "$GUID" in a command, make sure to replace it with your GUID.
++
+[NOTE]
+====
+The `workstation` node serves as a jumpbox to the rest of the environment.
+====
+
+. Generate an SSH key pair:
++
+[source,sh]
+----
+[cloud-user@workstation ~]$ ssh-keygen
+----
++
+.Sample Output
+[source,texinfo]
+----
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/cloud-user/.ssh/id_rsa): 
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/cloud-user/.ssh/id_rsa
+Your public key has been saved in /home/cloud-user/.ssh/id_rsa.pub
+The key fingerprint is:
+SHA256:I85+wcJm0ouFdjD5BiIxl7u88kSMwOEOyW4iLSkX5B0 cloud-user@workstation
+The key's randomart image is:
++---[RSA 3072]----+
+| ...E            |
+|*++. .           |
+|+Bo...           |
+|*=o.=            |
+|B*=o O..S        |
+|=+o +o@.o.       |
+|  .o Ooo .       |
+|... ... .        |
+| o.   ..         |
++----[SHA256]-----+
+----
+
+. From the `workstation` node, distribute your SSH public key to the undercloud node so that you are able to log in from `workstation` to `undercloud` via SSH using key-based authentication:
++
+[source,sh]
+----
+[cloud-user@workstation ~]$ ssh-copy-id root@undercloud.example.com
+----
++
+.Sample Output
+[source,texinfo]
+----
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/cloud-user/.ssh/id_rsa.pub"
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+root@undercloud.example.com's password: 
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'root@undercloud.example.com'"
+and check to make sure that only the key(s) you wanted were added.
+
+----
+<1> The `root` account on the undercloud node has the password `r3dh4t1!`.
+
+. From `workstation`, use SSH to remotely log in to the undercloud node as `root`, specifying `r3dh4t1!` as the password:
++
+[source,sh]
+----
+[cloud-user@workstation ~]$ ssh root@undercloud.example.com
+----
+
+== Test Network Connectivity and Settings
+
+In this section, you verify the networking details of the undercloud node.
+
+. Examine the undercloud node's hostname:
++
+[source,sh]
+----
+[root@undercloud ~]# hostnamectl --static status
+----
++
+.Expected Output
+[source,texinfo]
+----
+undercloud.example.com
+----
+
+. Examine the network interfaces and IP addresses:
++
+[source,sh]
+----
+[root@undercloud ~]# ip a
+----
++
+.Sample Output
+[source,texinfo]
+----
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 8884 qdisc fq_codel state UP group default qlen 1000
+    link/ether fa:16:3e:32:3b:ee brd ff:ff:ff:ff:ff:ff
+    altname enp0s3
+    altname ens3
+    inet 192.0.2.1/24 brd 192.0.2.255 scope global noprefixroute eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::f816:3eff:fe32:3bee/64 scope link 
+       valid_lft forever preferred_lft forever
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 8884 qdisc fq_codel state UP group default qlen 1000
+    link/ether fa:16:3e:ad:3d:0f brd ff:ff:ff:ff:ff:ff
+    altname enp0s4
+    altname ens4
+    inet 10.0.0.253/24 brd 10.0.0.255 scope global dynamic noprefixroute eth1
+       valid_lft 22283sec preferred_lft 22283sec
+    inet6 fe80::f816:3eff:fead:3d0f/64 scope link 
+       valid_lft forever preferred_lft forever
+----
+
+. Examine the configuration of the network interfaces:
++
+[source,sh]
+----
+[root@undercloud ~]# cat /etc/sysconfig/network-scripts/ifcfg-eth1
+----
++
+.Sample Output
+[source,texinfo]
+----
+# Created by cloud-init on instance boot automatically, do not edit.
+#
+AUTOCONNECT_PRIORITY=999
+BOOTPROTO=dhcp
+DEVICE=eth1
+DHCLIENT_SET_DEFAULT_ROUTE=no
+HWADDR=fa:16:3e:ad:3d:0f
+MTU=8884
+ONBOOT=yes
+TYPE=Ethernet
+USERCTL=no
+----
++
+[NOTE]
+This interface is used to access from workstation and access internet. Interface `eth0` will be used for provisioning network.
+
+. Verify successful name resolution and Internet access:
++
+[source,sh]
+----
+[root@undercloud ~]# ping -c1 www.redhat.com
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
+PING e3396.dscx.akamaiedge.net (96.16.244.143) 56(84) bytes of data.
+64 bytes from a96-16-244-143.deploy.static.akamaitechnologies.com (96.16.244.143): icmp_seq=1 ttl=54 time=2.32 ms
+
+--- e3396.dscx.akamaiedge.net ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 2.322/2.322/2.322/0.000 ms
+----
+
+. Confirm that you do not see any errors when running the `ping` command.
+* The IP address may be different, but expect an affirmative response.
+* On the undercloud node, the `eth0` interface is connected to the provisioning network.
+
+== Create Non-Root Installation User
+
+In this section, you create a non-root user, which is required by Red Hat^(R)^ OpenStack^(R)^ Platform director's installation process to execute commands.
+
+. Create a user on the undercloud node called `stack`:
++
+[source,sh]
+----
+[root@undercloud ~]# useradd stack
+----
+
+. Configure SSH authentication for the `stack` user using the `root` user's `authorized_keys` file as a template:
++
+[source,sh]
+----
+[root@undercloud ~]# mkdir /home/stack/.ssh
+[root@undercloud ~]# cp /root/.ssh/authorized_keys /home/stack/.ssh/
+[root@undercloud ~]# chown -R stack:stack /home/stack/.ssh
+----
+
+. Create a `sudo` rule allowing the `stack` user to run any command as `root` without requiring a password:
++
+[source,sh]
+----
+[root@undercloud ~]# echo 'stack ALL=(root) NOPASSWD:ALL' | tee -a /etc/sudoers.d/stack
+----
++
+.Expected Output
+[source,texinfo]
+----
+stack ALL=(root) NOPASSWD:ALL
+----
+
+. Set `root` user's password to "r3dh4t1!":
++
+[source,sh]
+----
+[root@undercloud ~]# echo "r3dh4t1!" | passwd stack --stdin
+----
++
+.Expected Output
+[source,texinfo]
+----
+Changing password for user stack.
+passwd: all authentication tokens updated successfully.
+----
+
+. Set the correct permissions on the `stack` user's `sudo` rule file:
++
+[source,sh]
+----
+[root@undercloud ~]# chmod 0440 /etc/sudoers.d/stack
+----
+
+. Log out from the undercloud node:
++
+[source,sh]
+----
+[root@undercloud ~]# exit
+----
+
+. From the `workstation` node, make sure that you can connect to the undercloud node as the `stack` user:
++
+[source,sh]
+----
+[cloud-user@workstation ~]$ ssh stack@undercloud.example.com
+----
+
+. Verify that the `stack` user can invoke the `sudo` command:
++
+[source,sh]
+----
+[stack@undercloud ~]$ sudo -i
+----
++
+.Expected Output
+[source,texinfo]
+----
+[root@undercloud ~]#
+----
+
+== Set and Verify Software Channels
+
+The lab environment uses local repositories. In this section, you set and verify the required channels.
+
+In contrast to the lab environment, a production environment uses Red Hat Subscription Management to register systems with the appropriate repositories and enable the software channels needed for the installation. Consult Red Hat's documentation for more information about link:https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/17.0/html-single/director_installation_and_usage/index#preparing-the-undercloud[Preparing the undercloud^].
+
+. Create a repository file:
++
+[source,sh]
+----
+[root@undercloud ~]# cat >/etc/yum.repos.d/open.repo <<\EOF
+[rhel-9-for-x86_64-appstream-eus-rpms]
+name=rhel-9-for-x86_64-appstream-eus-rpms
+baseurl=http://192.0.2.253/repos/rhel-9-for-x86_64-appstream-eus-rpms
+enabled=1
+gpgcheck=0
+
+[rhel-9-for-x86_64-baseos-eus-rpms]
+name=rhel-9-for-x86_64-baseos-eus-rpms
+baseurl=http://192.0.2.253/repos/rhel-9-for-x86_64-baseos-eus-rpms
+enabled=1
+gpgcheck=0
+
+[rhel-9-for-x86_64-highavailability-eus-rpms]
+name=rhel-9-for-x86_64-highavailability-eus-rpms
+baseurl=http://192.0.2.253/repos/rhel-9-for-x86_64-highavailability-eus-rpms
+enabled=1
+gpgcheck=0
+
+[openstack-17-for-rhel-9-x86_64-rpms]
+name=openstack-17-for-rhel-9-x86_64-rpms
+baseurl=http://192.0.2.253/repos/openstack-17-for-rhel-9-x86_64-rpms
+enabled=1
+gpgcheck=0
+
+[fast-datapath-for-rhel-9-x86_64-rpms]
+name=fast-datapath-for-rhel-9-x86_64-rpms
+baseurl=http://192.0.2.253/repos/fast-datapath-for-rhel-9-x86_64-rpms
+enabled=1
+gpgcheck=0
+
+[rhceph-5-tools-for-rhel-9-x86_64-rpms]
+name=rhceph-5-tools-for-rhel-9-x86_64-rpms
+baseurl=http://192.0.2.253/repos/rhceph-5-tools-for-rhel-9-x86_64-rpms
+enabled=1
+gpgcheck=0
+
+EOF
+----
+
+. Create a `yum` repository cache:
++
+[source,sh]
+----
+[root@undercloud ~]# yum makecache
+----
+
+. List the installed Red Hat software channels:
++
+[source,sh]
+----
+[root@undercloud ~]# yum repolist
+----
++
+[WARNING]
+Enable only the repositories listed here. Additional repositories can cause package and software conflicts.
+
+. Update your system to make sure that you have the latest base system packages:
++
+[source,sh]
+----
+[root@undercloud ~]# yum -y update
+----
+
+. If the kernel or shared library packages are updated, reboot your system:
++
+[source,sh]
+----
+[root@undercloud ~]# reboot
+----
+
+== Install Software Packages
+
+. Reconnect and install the required command line tools for the director's installation and configuration:
++
+[source,sh]
+----
+[root@undercloud ~]# yum -y install python3-tripleoclient
+----
+
+
+. The `python3-tripleoclient` package has all Red Hat OpenStack Platform 17 director packages as dependencies.
+
+
+== Configure Undercloud Installation
+
+Red Hat OpenStack Platform director's installation process requires certain settings to determine your network configurations. The settings are stored in the `undercloud.conf` file in the `stack` user’s home directory. Red Hat provides a sample template (`/usr/share/python-tripleoclient/undercloud.conf.sample`) to help determine the required settings and default values for your installation.
+
+Outside the lab environment, you copy the sample undercloud configuration template to the `stack` user’s home directory and modify it to fit the environment. However, for the sake of simplicity in this lab, you use the configuration settings shown in this section.
+
+. Create the `undercloud.conf` file in the `/home/stack` directory with the following content:
++
+[source,texinfo]
+----
+[DEFAULT]
+undercloud_hostname = undercloud.example.com
+container_images_file = containers-prepare-parameter.yaml
+local_ip = 192.0.2.1/24
+undercloud_public_host = 192.0.2.2
+undercloud_admin_host = 192.0.2.3
+undercloud_nameservers = 8.8.8.8
+#undercloud_ntp_servers =
+#overcloud_domain_name = example.com
+subnets = ctlplane-subnet
+local_subnet = ctlplane-subnet
+#undercloud_service_certificate =
+generate_service_certificate = true
+certificate_generation_ca = local
+local_interface = eth0
+inspection_extras = false
+undercloud_debug = false
+enable_tempest = false
+enable_ui = false
+#hieradata_override = /home/stack/hieradata.yaml
+
+[auth]
+
+[ctlplane-subnet]
+cidr = 192.0.2.0/24
+dhcp_start = 192.0.2.5
+dhcp_end = 192.0.2.24
+inspection_iprange = 192.0.2.100,192.0.2.120
+gateway = 192.0.2.254
+----
++
+[NOTE]
+====
+* This is a subset of undercloud configuration parameters modified for the lab environment. The remaining options use the default values.
+
+* For the full set of options, see link:https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/17.0/html-single/director_installation_and_usage/[Director Installation and Usage^].
+
+
+====
+
+. Create a file `hieradata.yaml` in the `/home/stack` directory with the following content:
++
+[%nowrap]
+----
+ironic::config::ironic_config:
+  ipmi/use_ipmitool_retries:
+    value: True
+----
++
+[NOTE]
+This parameter is needed only in this virtual environment and not recommended for production environment with physical systems.
+
+== Install Undercloud and Verify Installation
+
+[WARNING]
+Make sure that you are performing the installation as the `stack` user. Otherwise, the installation--while it may possibly succeed--will not operate properly.
+
+. Generate the `containers-prepare-parameter.yaml` file indicating where the the images are hosted:
++
+[source,sh,options="nowrap"]
+----
+[stack@undercloud ~]$ openstack tripleo container image prepare default   --local-push-destination   --output-env-file containers-prepare-parameter.yaml
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
+# Generated with the following on 2022-11-24T06:04:02.202644
+#
+#   openstack tripleo container image prepare default --local-push-destination --output-env-file containers-prepare-parameter.yaml
+#
+
+parameter_defaults:
+  ContainerImagePrepare:
+  - push_destination: true
+    set:
+      ceph_alertmanager_image: ose-prometheus-alertmanager
+      ceph_alertmanager_namespace: registry.redhat.io/openshift4
+      ceph_alertmanager_tag: 4.6
+      ceph_grafana_image: rhceph-5-dashboard-rhel8
+      ceph_grafana_namespace: registry.redhat.io/rhceph
+      ceph_grafana_tag: latest
+      ceph_image: rhceph-5-rhel8
+      ceph_namespace: registry.redhat.io/rhceph
+      ceph_node_exporter_image: ose-prometheus-node-exporter
+      ceph_node_exporter_namespace: registry.redhat.io/openshift4
+      ceph_node_exporter_tag: v4.6
+      ceph_prometheus_image: ose-prometheus
+      ceph_prometheus_namespace: registry.redhat.io/openshift4
+      ceph_prometheus_tag: 4.6
+      ceph_tag: latest
+      name_prefix: openstack-
+      name_suffix: ''
+      namespace: registry.redhat.io/rhosp-rhel9
+      neutron_driver: ovn
+      rhel_containers: false
+      tag: '17.0'
+    tag_from_label: '{version}-{release}'
+----
++
+* The default file for preparing your containers (`containers-prepare-parameter.yaml`) contains the `ContainerImagePrepare` Heat parameter. This parameter defines a list of strategies for preparing a set of images:
++
+[source,texinfo,options="nowrap"]
+----
+parameter_defaults:
+  ContainerImagePrepare:
+  - (strategy one)
+  - (strategy two)
+  - (strategy three)
+----
++
+
+. Replace public image registry address with a private image registry:
++
+[source,sh,options="nowrap"]
+----
+[stack@undercloud ~]$ sed -i "s/registry.redhat.io/classroom.example.com/" containers-prepare-parameter.yaml
+----
+
+. Review the file after modification:
++
+[source,sh,options="nowrap"]
+----
+[stack@undercloud ~]$ cat containers-prepare-parameter.yaml
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
+# Generated with the following on 2022-11-24T06:04:02.202644
+#
+#   openstack tripleo container image prepare default --local-push-destination --output-env-file containers-prepare-parameter.yaml
+#
+
+parameter_defaults:
+  ContainerImagePrepare:
+  - push_destination: true
+    set:
+      ceph_alertmanager_image: ose-prometheus-alertmanager
+      ceph_alertmanager_namespace: classroom.example.com/openshift4
+      ceph_alertmanager_tag: 4.6
+      ceph_grafana_image: rhceph-5-dashboard-rhel8
+      ceph_grafana_namespace: classroom.example.com/rhceph
+      ceph_grafana_tag: latest
+      ceph_image: rhceph-5-rhel8
+      ceph_namespace: classroom.example.com/rhceph
+      ceph_node_exporter_image: ose-prometheus-node-exporter
+      ceph_node_exporter_namespace: classroom.example.com/openshift4
+      ceph_node_exporter_tag: v4.6
+      ceph_prometheus_image: ose-prometheus
+      ceph_prometheus_namespace: classroom.example.com/openshift4
+      ceph_prometheus_tag: 4.6
+      ceph_tag: latest
+      name_prefix: openstack-
+      name_suffix: ''
+      namespace: classroom.example.com/rhosp-rhel9
+      neutron_driver: ovn
+      rhel_containers: false
+      tag: '17.0'
+    tag_from_label: '{version}-{release}'
+----
+
+. Install the undercloud:
++
+[source,sh]
+----
+[stack@undercloud ~]$ time openstack undercloud install
+----
+* This process generally takes about 30 minutes to complete. Warning messages are normal.
++
+[CAUTION]
+====
+Pay close attention to the installation log. Although many entries may appear highlighted, they are generally `WARNING` messages and can be safely ignored.
+====
+
+. Examine the log messages to make sure that there are no errors and that you see confirmation of the successful installation.
+
+. Review the contents of the two files that the installation process created in the `stack` user's home directory:
++
+[source,sh]
+----
+[stack@undercloud ~]$ cat ~/stackrc
+----
+
+. Review the undercloud catalog to confirm successful installation of the undercloud:
++
+[source,sh]
+----
+[stack@undercloud ~]$ source ~/stackrc
+(undercloud) [stack@undercloud ~]$ openstack catalog list
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
++------------------+-------------------------+-----------------------------------+
+| Name             | Type                    | Endpoints                         |
++------------------+-------------------------+-----------------------------------+
+| keystone         | identity                | regionOne                         |
+|                  |                         |   public: https://192.0.2.2:13000 |
+|                  |                         | regionOne                         |
+|                  |                         |   admin: http://192.0.2.3:35357   |
+|                  |                         | regionOne                         |
+|                  |                         |   internal: http://192.0.2.3:5000 |
+|                  |                         |                                   |
+| ironic           | baremetal               | regionOne                         |
+|                  |                         |   public: https://192.0.2.2:13385 |
+|                  |                         | regionOne                         |
+|                  |                         |   internal: http://192.0.2.3:6385 |
+|                  |                         | regionOne                         |
+|                  |                         |   admin: http://192.0.2.3:6385    |
+|                  |                         |                                   |
+| neutron          | network                 | regionOne                         |
+|                  |                         |   public: https://192.0.2.2:13696 |
+|                  |                         | regionOne                         |
+|                  |                         |   admin: http://192.0.2.3:9696    |
+|                  |                         | regionOne                         |
+|                  |                         |   internal: http://192.0.2.3:9696 |
+|                  |                         |                                   |
+| ironic-inspector | baremetal-introspection | regionOne                         |
+|                  |                         |   internal: http://192.0.2.3:5050 |
+|                  |                         | regionOne                         |
+|                  |                         |   public: https://192.0.2.2:13050 |
+|                  |                         | regionOne                         |
+|                  |                         |   admin: http://192.0.2.3:5050    |
+|                  |                         |                                   |
++------------------+-------------------------+-----------------------------------+
+----
+* A complete list of the undercloud API endpoints is a good indicator of a successful undercloud installation.
++
+[TIP]
+If there are issues with the undercloud installation, you can troubleshoot from the `/home/stack/install-undercloud.log` installation log.
+
+== Review Network Configuration Changes
+
+In this section, you review the changes to the network configuration on the director’s undercloud host.
+
+. Display the undercloud host's IP addresses:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ ip a
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel master ovs-system state UP group default qlen 1000
+    link/ether fa:16:3e:32:3b:ee brd ff:ff:ff:ff:ff:ff
+    altname enp0s3
+    altname ens3
+    inet6 fe80::f816:3eff:fe32:3bee/64 scope link 
+       valid_lft forever preferred_lft forever
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 8884 qdisc fq_codel state UP group default qlen 1000
+    link/ether fa:16:3e:ad:3d:0f brd ff:ff:ff:ff:ff:ff
+    altname enp0s4
+    altname ens4
+    inet 10.0.0.253/24 brd 10.0.0.255 scope global dynamic noprefixroute eth1
+       valid_lft 39529sec preferred_lft 39529sec
+    inet6 fe80::f816:3eff:fead:3d0f/64 scope link 
+       valid_lft forever preferred_lft forever
+4: ovs-system: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether 0a:4d:c5:06:6a:39 brd ff:ff:ff:ff:ff:ff
+5: br-ctlplane: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/ether fa:16:3e:32:3b:ee brd ff:ff:ff:ff:ff:ff
+    inet 192.0.2.1/24 brd 192.0.2.255 scope global br-ctlplane
+       valid_lft forever preferred_lft forever
+    inet 192.0.2.3/32 brd 192.0.2.3 scope global br-ctlplane
+       valid_lft forever preferred_lft forever
+    inet 192.0.2.2/32 brd 192.0.2.2 scope global br-ctlplane
+       valid_lft forever preferred_lft forever
+    inet6 fe80::f816:3eff:fe32:3bee/64 scope link 
+       valid_lft forever preferred_lft forever
+6: br-int: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether ca:f6:19:c6:dd:4d brd ff:ff:ff:ff:ff:ff
+----
+
+. Examine the network routes:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ ip r
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
+default via 10.0.0.1 dev eth1 proto dhcp src 10.0.0.253 metric 101 
+10.0.0.0/24 dev eth1 proto kernel scope link src 10.0.0.253 metric 101 
+169.254.169.254 via 10.0.0.2 dev eth1 proto dhcp src 10.0.0.253 metric 101 
+192.0.2.0/24 dev br-ctlplane proto kernel scope link src 192.0.2.1 
+----
+
+. Examine the Open vSwitch database:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ sudo ovs-vsctl show
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
+f401a2d1-dfd8-4f81-81d3-b4d341a91647
+    Manager "ptcp:6640:127.0.0.1"
+        is_connected: true
+    Bridge br-ctlplane
+        Controller "tcp:127.0.0.1:6633"
+            is_connected: true
+        fail_mode: secure
+        datapath_type: system
+        Port eth0
+            Interface eth0
+        Port phy-br-ctlplane
+            Interface phy-br-ctlplane
+                type: patch
+                options: {peer=int-br-ctlplane}
+        Port br-ctlplane
+            Interface br-ctlplane
+                type: internal
+    Bridge br-int
+        Controller "tcp:127.0.0.1:6633"
+            is_connected: true
+        fail_mode: secure
+        datapath_type: system
+        Port br-int
+            Interface br-int
+                type: internal
+        Port tap6f44010c-26
+            tag: 1
+            Interface tap6f44010c-26
+                type: internal
+        Port int-br-ctlplane
+            Interface int-br-ctlplane
+                type: patch
+                options: {peer=phy-br-ctlplane}
+    ovs_version: "2.17.3"
+----
+
+. Examine the OpenStack network configuration parameters:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ cat /etc/os-net-config/config.yaml 
+----
++
+.Sample Output
+[source,json]
+----
+network_config:
+- type: ovs_bridge
+  name: br-ctlplane
+  use_dhcp: false
+  ovs_extra:
+  - br-set-external-id br-ctlplane bridge-id br-ctlplane
+  addresses:
+  - ip_netmask: 192.0.2.1/24
+  - ip_netmask: 192.0.2.3/32
+  - ip_netmask: 192.0.2.2/32
+  routes: []
+  dns_servers: ['8.8.8.8']
+  domain: []
+  members:
+    - type: interface
+      name: eth0
+      primary: true
+      mtu: 1500
+----
+
+== Review Undercloud Neutron Subnet
+
+. List the undercloud networks:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack network list
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
++--------------------------------------+----------+--------------------------------------+
+| ID                                   | Name     | Subnets                              |
++--------------------------------------+----------+--------------------------------------+
+| d8e3f68f-8e44-4413-be23-e9e767c19b59 | ctlplane | dae17d17-cc31-4ebf-a515-079dc5ea726f |
++--------------------------------------+----------+--------------------------------------+
+----
+
+. List the undercloud subnets:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack subnet list
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
++--------------------------------------+-----------------+--------------------------------------+--------------+
+| ID                                   | Name            | Network                              | Subnet       |
++--------------------------------------+-----------------+--------------------------------------+--------------+
+| dae17d17-cc31-4ebf-a515-079dc5ea726f | ctlplane-subnet | d8e3f68f-8e44-4413-be23-e9e767c19b59 | 192.0.2.0/24 |
++--------------------------------------+-----------------+--------------------------------------+--------------+
+----
+
+. Examine the subnet details:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack subnet show ctlplane-subnet
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
++----------------------+--------------------------------------+
+| Field                | Value                                |
++----------------------+--------------------------------------+
+| allocation_pools     | 192.0.2.5-192.0.2.24                 |
+| cidr                 | 192.0.2.0/24                         |
+| created_at           | 2022-11-24T11:30:48Z                 |
+| description          |                                      |
+| dns_nameservers      | 8.8.8.8                              |
+| dns_publish_fixed_ip | None                                 |
+| enable_dhcp          | True                                 |
+| gateway_ip           | 192.0.2.254                          |
+| host_routes          |                                      |
+| id                   | dae17d17-cc31-4ebf-a515-079dc5ea726f |
+| ip_version           | 4                                    |
+| ipv6_address_mode    | None                                 |
+| ipv6_ra_mode         | None                                 |
+| name                 | ctlplane-subnet                      |
+| network_id           | d8e3f68f-8e44-4413-be23-e9e767c19b59 |
+| prefix_length        | None                                 |
+| project_id           | 7a4e861041d34c8a99e217398df78d1a     |
+| revision_number      | 0                                    |
+| segment_id           | None                                 |
+| service_types        |                                      |
+| subnetpool_id        | None                                 |
+| tags                 |                                      |
+| updated_at           | 2022-11-24T11:30:48Z                 |
++----------------------+--------------------------------------+
+----
+* The `gateway_ip` field contains the IP address of a gateway available in the lab network.

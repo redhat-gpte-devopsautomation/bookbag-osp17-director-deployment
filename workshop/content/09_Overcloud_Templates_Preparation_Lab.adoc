@@ -1,0 +1,299 @@
+:GUID: %guid%
+:OSP_DOMAIN: %dns_zone%
+:GITLAB_URL: %gitlab_url%
+:GITLAB_USERNAME: %gitlab_username%
+:GITLAB_PASSWORD: %gitlab_password%
+:GITLAB_HOST: %gitlab_hostname%
+:TOWER_URL: %tower_url%
+:TOWER_ADMIN_USER: %tower_admin_user%
+:TOWER_ADMIN_PASSWORD: %tower_admin_password%
+:SSH_COMMAND: %ssh_command%
+:SSH_PASSWORD: %ssh_password%
+:VSCODE_UI_URL: %vscode_ui_url%
+:VSCODE_UI_PASSWORD: %vscode_ui_password%
+:organization_name: Default
+:gitlab_project: ansible/gitops-lab
+:project_prod: Project gitOps - Prod
+:project_test: Project gitOps - Test
+:inventory_prod: GitOps inventory - Prod Env
+:inventory_test: GitOps inventory - Test Env
+:credential_machine: host_credential
+:credential_git: gitlab_credential
+:credential_git_token: gitlab_token 
+:credential_openstack: cloud_credential
+:jobtemplate_prod: App deployer - Prod Env
+:jobtemplate_test: App deployer - Test Env
+:source-linenums-option:        
+:markup-in-source: verbatim,attributes,quotes
+:show_solution: true
+:catalog_name: OpenShift 4 Advanced Infra Deploy ILT
+:course_name: Red Hat OpenStack 17
+:opentlc_portal: link:https://labs.opentlc.com/[OPENTLC lab portal^]
+:opentlc_account_management: link:https://www.opentlc.com/account/[OPENTLC Account Management page^]
+:opentlc_catalog_name: OPENTLC OpenShift 4 Labs
+:opentlc_catalog_item_name_aws: OpenShift 4 Advanced Infra Deploy ILT
+:ocp4_docs: link:https://docs.openshift.com/container-platform/4.11/welcome/index.html[OpenShift Container Platform Documentation]
+
+
+== Review General Customization Concepts
+
+The undercloud includes a set of TripleO Heat templates that acts as a plan for your overcloud creation. You can customize aspects of the overcloud using environment files, which are YAML-formatted files that override parameters and resources in the core Heat template collection. You can include as many environment files as necessary. However, the order of the environment files is important because the parameters and resources defined in subsequent environment files take precedence. Use the following list as an example of the environment file order:
+
+* The environment file specifying the number of nodes per role and their flavors. It is vital to include this information for overcloud creation.
+
+* The environment file specifying the location of the container images for containerized OpenStack^(R)^ services. This is the file similar to the one you created previously in the _Overcloud and Container Images Lab_.
+
+* Network configuration environment files:
+
+** Start with the network initialization file (`environments/network-isolation.yaml`) from the TripleO Heat template collection if you plan to implement network isolation in your overcloud. The core TripleO Heat template collection contains Jinja2 templates that are used to generate this file dynamically during the deployment. Do not be surprised if this file is not present in the `/usr/share/openstack-tripleo-heat-templates` directory. Just include the file into your deployment plan.
+** Follow with a network environment file with the registry of the NIC configuration templates for different roles and any additional network parameters such as VLANs, IPv4, and IPv6 subnets.
+
+* Any extra files that may be necessary in the advanced deployments, such as:
+
+** External load-balancing environment files
+** Storage environment files for Red Hat^(R)^ Ceph^(R)^ Storage, NFS, iSCSI, etc.
+** Environment files for Red Hat Content Delivery Network or Red Hat Satellite registration
+** Other custom environment files
+
+Some of the core Heat templates for the overcloud are in the Jinja2 format. Red Hat OpenStack Platform director renders them to Heat environment files in the YAML format at the beginning of the overcloud deployment, using roles and network parameters. The default values for these parameters are provided in the `roles_data.yaml` and `network_data.yaml` files. You use them as starting points for customization.
+
+You can use this lab environment to experiment with different OpenStack deployment scenarios. The instructions included in this lab cover only one of them with _Open Virtual Networking (OVN) and Distributed Virtual Routing (DVR) with High Availability (HA)_. This is the default scenario on Red Hat OpenStack Platform 16.
+
+[IMPORTANT]
+A basic overcloud uses local LVM storage for block storage, which is not a supported configuration. It is recommended that you use an external storage solution, such as _Red Hat Ceph Storage_ for block storage, but the lab environment does not provide these resources.
+
+== Prepare Environment Files for Overcloud Deployment
+
+. Create directories for the environment files and Heat templates:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ mkdir -p ~/templates
+----
+
+. Prepare a custom environment file specifying the number of nodes per role and their flavors named `/home/stack/templates/nodes.yaml` :
++
+[source,texinfo]
+----
+- name: Controller
+  count: 3
+  defaults:
+    networks:
+    - network: storage
+      subnet: storage_subnet
+    - network: storage_mgmt
+      subnet: storage_mgmt_subnet
+    - network: internal_api
+      subnet: internal_api_subnet
+    - network: tenant
+      subnet: tenant_subnet
+    - network: external
+      subnet: external_subnet
+ 
+    network_config:
+      template: templates/multiple_nics/multiple_nics_dvr.j2
+      default_route_network:
+        - external
+  instances:
+  - hostname: overcloud-controller-0
+    name: ctrl01
+    networks:
+    - network: ctlplane
+      vif: true
+      fixed_ip: 192.0.2.201
+    - network: storage
+      fixed_ip: 172.16.1.201
+    - network: storage_mgmt
+      fixed_ip: 172.16.3.201
+    - network: internal_api
+      fixed_ip: 172.16.2.201
+    - network: tenant
+      fixed_ip: 172.16.0.201
+    - network: external
+      fixed_ip: 10.0.0.201
+     
+  - hostname: overcloud-controller-1
+    name: ctrl02
+    networks:
+    - network: ctlplane
+      vif: true
+      fixed_ip: 192.0.2.202
+    - network: storage
+      fixed_ip: 172.16.1.202
+    - network: storage_mgmt
+      fixed_ip: 172.16.3.202
+    - network: internal_api
+      fixed_ip: 172.16.2.202
+    - network: tenant
+      fixed_ip: 172.16.0.202
+    - network: external
+      fixed_ip: 10.0.0.202
+  - hostname: overcloud-controller-2
+    name: ctrl03
+    networks:
+    - network: ctlplane
+      vif: true
+      fixed_ip: 192.0.2.203
+    - network: storage
+      fixed_ip: 172.16.1.203
+    - network: storage_mgmt
+      fixed_ip: 172.16.3.203
+    - network: tenant
+      fixed_ip: 172.16.0.203
+    - network: internal_api
+      fixed_ip: 172.16.2.203
+    - network: external
+      fixed_ip: 10.0.0.203
+- name: Compute
+  count: 2
+  defaults:
+    network_config:
+      template: templates/multiple_nics/multiple_nics_dvr.j2
+      default_route_network:
+        - external
+  instances:
+  - hostname: overcloud-novacompute-0
+    name: compute01
+    networks:
+    - network: ctlplane
+      vif: true
+      fixed_ip: 192.0.2.211
+    - network: storage
+      fixed_ip: 172.16.1.211
+    - network: storage_mgmt
+      fixed_ip: 172.16.3.211
+    - network: internal_api
+      fixed_ip: 172.16.2.211
+    - network: tenant
+      fixed_ip: 172.16.0.211
+    - network: external
+      fixed_ip: 10.0.0.211
+  - hostname: overcloud-novacompute-1
+    name: compute02
+    networks:
+    - network: ctlplane
+      vif: true
+      fixed_ip: 192.0.2.212
+    - network: storage
+      fixed_ip: 172.16.1.212
+    - network: storage_mgmt
+      fixed_ip: 172.16.3.212
+    - network: internal_api
+      fixed_ip: 172.16.2.212
+    - network: tenant
+      fixed_ip: 172.16.0.212
+    - network: external
+      fixed_ip: 10.0.0.212
+----
+
+
+== Create Custom Network Environment File
+
+Red Hat OpenStack Platform 17 director provides a tool to generate environment files and sample NIC configuration templates using data from `network_data.yaml` files. In this section, you see how to use this tool.
+
+=== Customize Network Data
+
+. For convenience, define the `THT` shell variable as a path to the TripleO Heat templates directory:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ cp $THT/network-data-samples/vip-data-default-network-isolation.yaml ~/templates/vip_data.yaml
+----
+
+. Copy the default `network_data.yaml` files from `$THT` to a local directory:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ cp $THT/roles_data.yaml ~/templates/
+----
+
+. Review the `network_data.yaml` file:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ egrep -v '^#|^$' templates/network_data.yaml
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
+- name: Storage
+  vip: true
+  vlan: 30
+  name_lower: storage
+  ip_subnet: '172.16.1.0/24'
+  allocation_pools: [{'start': '172.16.1.4', 'end': '172.16.1.250'}]
+  ipv6_subnet: 'fd00:fd00:fd00:3000::/64'
+  ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:3000::10', 'end': 'fd00:fd00:fd00:3000:ffff:ffff:ffff:fffe'}]
+  mtu: 1500
+- name: StorageMgmt
+  name_lower: storage_mgmt
+  vip: true
+  vlan: 40
+  ip_subnet: '172.16.3.0/24'
+  allocation_pools: [{'start': '172.16.3.4', 'end': '172.16.3.250'}]
+  ipv6_subnet: 'fd00:fd00:fd00:4000::/64'
+  ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:4000::10', 'end': 'fd00:fd00:fd00:4000:ffff:ffff:ffff:fffe'}]
+  mtu: 1500
+- name: InternalApi
+  name_lower: internal_api
+  vip: true
+  vlan: 20
+  ip_subnet: '172.16.2.0/24'
+  allocation_pools: [{'start': '172.16.2.4', 'end': '172.16.2.250'}]
+  ipv6_subnet: 'fd00:fd00:fd00:2000::/64'
+  ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:2000::10', 'end': 'fd00:fd00:fd00:2000:ffff:ffff:ffff:fffe'}]
+  mtu: 1500
+- name: Tenant
+  vip: false  # Tenant network does not use VIPs
+  name_lower: tenant
+  vlan: 50
+  ip_subnet: '172.16.0.0/24'
+  allocation_pools: [{'start': '172.16.0.4', 'end': '172.16.0.250'}]
+  ipv6_subnet: 'fd00:fd00:fd00:5000::/64'
+  ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:5000::10', 'end': 'fd00:fd00:fd00:5000:ffff:ffff:ffff:fffe'}]
+  mtu: 1500
+- name: External
+  vip: true
+  name_lower: external
+  vlan: 10
+  ip_subnet: '10.0.0.0/24'
+  allocation_pools: [{'start': '10.0.0.4', 'end': '10.0.0.250'}]
+  gateway_ip: '10.0.0.1'
+  ipv6_subnet: '2001:db8:fd00:1000::/64'
+  ipv6_allocation_pools: [{'start': '2001:db8:fd00:1000::10', 'end': '2001:db8:fd00:1000:ffff:ffff:ffff:fffe'}]
+  gateway_ipv6: '2001:db8:fd00:1000::1'
+  mtu: 1500
+- name: Management
+  # Management network is enabled by default for backwards-compatibility, but
+  # is not included in any roles by default. Add to role definitions to use.
+  enabled: true
+  vip: false  # Management network does not use VIPs
+  name_lower: management
+  vlan: 60
+  ip_subnet: '10.0.1.0/24'
+  allocation_pools: [{'start': '10.0.1.4', 'end': '10.0.1.250'}]
+  gateway_ip: '10.0.1.1'
+  gateway_ipv6: 'fd00:fd00:fd00:6000::1'
+  ipv6_subnet: 'fd00:fd00:fd00:6000::/64'
+  ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:6000::10', 'end': 'fd00:fd00:fd00:6000:ffff:ffff:ffff:fffe'}]
+  mtu: 1500
+----
+
+=== Generate Environment Files
+
+In this section, you use a tool to process the core TripleO Heat template collection to produce environment files:
+
+. Copy the TripleO Heat template's  vip-data-default-network-isolation.yaml to home/stack/templates/vip_data.yaml:
++
+[source,sh]
+----
+cp $THT/network-data-samples/vip-data-default-network-isolation.yaml ~/templates/vip_data.yaml
+----
+
+. Copy the TripleO Heat template's roles_data.yaml to home/stack/templates/vip_data.yaml:
++
+[source,sh]
+----
+cp $THT/roles_data.yaml ~/templates/
+----

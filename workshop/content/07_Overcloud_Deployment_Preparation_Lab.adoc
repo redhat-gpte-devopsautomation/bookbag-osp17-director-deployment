@@ -1,0 +1,336 @@
+:GUID: %guid%
+:OSP_DOMAIN: %dns_zone%
+:GITLAB_URL: %gitlab_url%
+:GITLAB_USERNAME: %gitlab_username%
+:GITLAB_PASSWORD: %gitlab_password%
+:GITLAB_HOST: %gitlab_hostname%
+:TOWER_URL: %tower_url%
+:TOWER_ADMIN_USER: %tower_admin_user%
+:TOWER_ADMIN_PASSWORD: %tower_admin_password%
+:SSH_COMMAND: %ssh_command%
+:SSH_PASSWORD: %ssh_password%
+:VSCODE_UI_URL: %vscode_ui_url%
+:VSCODE_UI_PASSWORD: %vscode_ui_password%
+:organization_name: Default
+:gitlab_project: ansible/gitops-lab
+:project_prod: Project gitOps - Prod
+:project_test: Project gitOps - Test
+:inventory_prod: GitOps inventory - Prod Env
+:inventory_test: GitOps inventory - Test Env
+:credential_machine: host_credential
+:credential_git: gitlab_credential
+:credential_git_token: gitlab_token 
+:credential_openstack: cloud_credential
+:jobtemplate_prod: App deployer - Prod Env
+:jobtemplate_test: App deployer - Test Env
+:source-linenums-option:        
+:markup-in-source: verbatim,attributes,quotes
+:show_solution: true
+:catalog_name: OpenShift 4 Advanced Infra Deploy ILT
+:course_name: Red Hat OpenStack 17
+:opentlc_portal: link:https://labs.opentlc.com/[OPENTLC lab portal^]
+:opentlc_account_management: link:https://www.opentlc.com/account/[OPENTLC Account Management page^]
+:opentlc_catalog_name: OPENTLC OpenShift 4 Labs
+:opentlc_catalog_item_name_aws: OpenShift 4 Advanced Infra Deploy ILT
+:ocp4_docs: link:https://docs.openshift.com/container-platform/4.11/welcome/index.html[OpenShift Container Platform Documentation]
+
+== Register Nodes for Overcloud
+
+Node registration uses a template file and makes nodes known to the undercloud so that overcloud components can be deployed on them.
+
+[NOTE]
+The only details that are required during node registration are for the given power management driver, although you use additional fields in your template to keep later operations simpler.
+
+. In the `stack` user’s home directory, create the `~/nodes.json` file with this content:
++
+[source,json]
+----
+{
+    "nodes": [
+        {
+            "ports": [{
+                "physical_network": "ctlplane",
+                "address": "2c:c2:60:01:02:02"
+            }],
+            "name": "ctrl01",
+            "pm_addr": "192.0.2.221",
+            "pm_password": "redhat",
+            "pm_type": "ipmi",
+            "pm_user": "admin"
+        },
+        {
+            "ports": [{
+                "physical_network": "ctlplane",
+                "address":  "2c:c2:60:01:02:03"
+            }],
+            "name": "ctrl02",
+            "pm_addr": "192.0.2.222",
+            "pm_password": "redhat",
+            "pm_type": "ipmi",
+            "pm_user": "admin"
+        },
+        {
+            "ports": [{
+                "physical_network": "ctlplane",
+                "address":  "2c:c2:60:01:02:04"
+            }],
+            "name": "ctrl03",
+            "pm_addr": "192.0.2.223",
+            "pm_password": "redhat",
+            "pm_type": "ipmi",
+            "pm_user": "admin"
+        },
+        {
+            "ports": [{
+                "physical_network": "ctlplane",
+                "address":  "2c:c2:60:01:02:05"
+            }],
+            "name": "compute01",
+            "pm_addr": "192.0.2.224",
+            "pm_password": "redhat",
+            "pm_type": "ipmi",
+            "pm_user": "admin"
+        },
+        {
+            "ports": [{
+                "physical_network": "ctlplane",
+                "address":  "2c:c2:60:01:02:06"
+            }],
+            "name": "compute02",
+            "pm_addr": "192.0.2.225",
+            "pm_password": "redhat",
+            "pm_type": "ipmi",
+            "pm_user": "admin"
+        }
+    ]
+}
+----
+* The file defines the parameters of the five nodes present in the lab environment--three controllers and two compute nodes.
+
+. Confirm that there are currently no bare-metal nodes registered with Red Hat^(R)^ OpenStack^(R)^ Platform director:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack baremetal node list
+----
+* Expect the output to be empty.
++
+[IMPORTANT]
+Always make sure that you source the proper RC file for the OpenStack environment where you are issuing the command--in this case, the `stackrc` RC file.
+
+== Inspect Registered Nodes
+
+. Verify the formatting and syntax of the `nodes.json` 
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack overcloud node import --validate-only ~/nodes.json
+----
+
+. Import the `nodes.json` file and perform introspection of the registered nodes:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack overcloud node import --introspect --provide ~/nodes.json
+----
++
+.Sample Output
+[source,texinfo]
+----
+Successfully registered node UUID c0cc8af5-5916-427b-b2db-4d26febd08f5
+Successfully registered node UUID ce4ab20d-3d11-487f-bb0e-f592400e9749
+Successfully registered node UUID c3ed1565-4774-4fb7-b963-7dd583dbedcc
+Successfully registered node UUID c1f6cd40-f696-4d13-bb63-dc273da501d2
+Successfully registered node UUID 86d70e0e-46a7-4c0d-a99e-a8c658104d74
+<omitted>
+PLAY RECAP *********************************************************************
+localhost                  : ok=5    changed=4    unreachable=0    failed=0    skipped=4    rescued=0    ignored=0   
+2022-11-24 07:56:41.306985 | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Summary Information ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2022-11-24 07:56:41.307347 | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Total Tasks: 9          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2022-11-24 07:56:41.307685 | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Elapsed Time: 0:00:13.039496 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2022-11-24 07:56:41.308166 |                                 UUID |       Info |       Host |   Task Name |   Run Time
+2022-11-24 07:56:41.308567 | fa163ead-3d0f-8183-713c-000000000016 |    SUMMARY |  localhost | poll for completion | 6.53s
+2022-11-24 07:56:41.308989 | fa163ead-3d0f-8183-713c-000000000010 |    SUMMARY |  localhost | Detect nova service endpoint | 2.58s
+2022-11-24 07:56:41.309330 | fa163ead-3d0f-8183-713c-00000000000f |    SUMMARY |  localhost | Make nodes available | 2.12s
+2022-11-24 07:56:41.309808 | fa163ead-3d0f-8183-713c-000000000015 |    SUMMARY |  localhost | Power off nodes | 1.58s
+2022-11-24 07:56:41.310169 | fa163ead-3d0f-8183-713c-000000000013 |    SUMMARY |  localhost | Wait for nova resources | 0.03s
+2022-11-24 07:56:41.310629 | fa163ead-3d0f-8183-713c-000000000008 |    SUMMARY |  localhost | Check for required inputs | 0.03s
+2022-11-24 07:56:41.311035 | fa163ead-3d0f-8183-713c-00000000000a |    SUMMARY |  localhost | Set node_uuids_provide fact | 0.03s
+2022-11-24 07:56:41.311434 | fa163ead-3d0f-8183-713c-00000000000c |    SUMMARY |  localhost | Notice | 0.02s
+2022-11-24 07:56:41.311752 | fa163ead-3d0f-8183-713c-000000000012 |    SUMMARY |  localhost | Run cell_v2 host discovery | 0.02s
+2022-11-24 07:56:41.312256 | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End Summary Information ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Successfully provided nodes: ['c0cc8af5-5916-427b-b2db-4d26febd08f5', 'ce4ab20d-3d11-487f-bb0e-f592400e9749', 'c3ed1565-4774-4fb7-b963-7dd583dbedcc', 'c1f6cd40-f696-4d13-bb63-dc273da501d2', '86d70e0e-46a7-4c0d-a99e-a8c658104d74']
+----
+
+. List the nodes that you just registered:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack baremetal node list
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
++--------------------------------------+-----------+---------------+-------------+--------------------+-------------+
+| UUID                                 | Name      | Instance UUID | Power State | Provisioning State | Maintenance |
++--------------------------------------+-----------+---------------+-------------+--------------------+-------------+
+| c0cc8af5-5916-427b-b2db-4d26febd08f5 | ctrl01    | None          | power off   | available          | False       |
+| ce4ab20d-3d11-487f-bb0e-f592400e9749 | ctrl02    | None          | power off   | available          | False       |
+| c3ed1565-4774-4fb7-b963-7dd583dbedcc | ctrl03    | None          | power off   | available          | False       |
+| c1f6cd40-f696-4d13-bb63-dc273da501d2 | compute01 | None          | power off   | available          | False       |
+| 86d70e0e-46a7-4c0d-a99e-a8c658104d74 | compute02 | None          | power off   | available          | False       |
++--------------------------------------+-----------+---------------+-------------+--------------------+-------------+
+----
++
+[IMPORTANT]
+====
+For all of the nodes, verify that `Power State` is set to `power off`, `Provisioning State` is set to `available`, and `Maintenance` is set to `False`.
+====
+
+. Display the details for each of the defined nodes--for example, for `ctrl01`:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack baremetal node show ctrl01
+----
+
+
+. Review the parameters in the `driver_info` field:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack baremetal node show ctrl01 -f json -c driver_info
+----
++
+.Sample Output
+[source,json]
+----
+{
+  "driver_info": {
+    "deploy_kernel": "file:///var/lib/ironic/httpboot/agent.kernel",
+    "rescue_kernel": "file:///var/lib/ironic/httpboot/agent.kernel",
+    "deploy_ramdisk": "file:///var/lib/ironic/httpboot/agent.ramdisk",
+    "rescue_ramdisk": "file:///var/lib/ironic/httpboot/agent.ramdisk",
+    "ipmi_address": "192.0.2.221",
+    "ipmi_password": "******",
+    "ipmi_username": "admin"
+  }
+}
+----
+* Verify that the output contains the IPMI access parameters: `ipmi_address`, `ipmi_password`, and `ipmi_username`.
+* Make sure that there are entries for `deploy_kernel` and `deploy_ramdisk`.
+
+. Verify that all of the nodes were successfully introspected:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack baremetal introspection list
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
++--------------------------------------+---------------------+---------------------+-------+
+| UUID                                 | Started at          | Finished at         | Error |
++--------------------------------------+---------------------+---------------------+-------+
+| ce4ab20d-3d11-487f-bb0e-f592400e9749 | 2022-11-24T12:52:48 | 2022-11-24T12:54:54 | None  |
+| c1f6cd40-f696-4d13-bb63-dc273da501d2 | 2022-11-24T12:52:48 | 2022-11-24T12:54:57 | None  |
+| 86d70e0e-46a7-4c0d-a99e-a8c658104d74 | 2022-11-24T12:52:48 | 2022-11-24T12:54:54 | None  |
+| c0cc8af5-5916-427b-b2db-4d26febd08f5 | 2022-11-24T12:52:24 | 2022-11-24T12:54:28 | None  |
+| c3ed1565-4774-4fb7-b963-7dd583dbedcc | 2022-11-24T12:52:20 | 2022-11-24T12:54:29 | None  |
++--------------------------------------+---------------------+---------------------+-------+
+----
+
+. After introspection finishes, examine some of the data gathered about each node:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack baremetal node show ctrl01 -f json -c properties
+----
++
+.Sample Output
+[source,json]
+----
+{
+  "properties": {
+    "vendor": "unknown",
+    "local_gb": "49",
+    "cpus": "4",
+    "cpu_arch": "x86_64",
+    "memory_mb": "12288",
+    "capabilities": "cpu_vt:true,cpu_aes:true,cpu_hugepages:true,cpu_hugepages_1g:true"
+  }
+}
+----
+* The `properties` field has the `local_gb`, `cpus`, `cpu_arch`, and `memory_mb` values obtained during the introspection.
++
+[NOTE]
+====
+Any of the information shown can be used for profile matching by the undercloud to specify a node's role in the overcloud. However, for this lab you perform manual profile tagging.
+====
+
+. Review all of the information gathered from one of the nodes:
++
+[source,sh,options="nowrap"]
+----
+(undercloud) [stack@undercloud ~]$ openstack baremetal introspection data save ctrl01 | jq "."
+----
++
+.Sample Output
+[source,json]
+----
+{
+  "inventory": {
+    "interfaces": [
+      {
+        "name": "ens7",
+        "mac_address": "fa:16:3e:e0:57:c1",
+        "ipv4_address": null,
+        "ipv6_address": "fe80::aa89:598a:c945:2a2%ens7",
+        "has_carrier": true,
+        "lldp": null,
+        "vendor": "0x1af4",
+        "product": "0x0001",
+        "client_id": null,
+        "biosdevname": null
+      },
+      {
+        "name": "ens5",
+        "mac_address": "fa:16:3e:e7:1e:eb",
+        "ipv4_address": null,
+        "ipv6_address": "fe80::65f1:b547:4dcd:e929%ens5",
+        "has_carrier": true,
+        "lldp": null,
+        "vendor": "0x1af4",
+        "product": "0x0001",
+        "client_id": null,
+        "biosdevname": null
+      },
+      {
+        "name": "ens3",
+        "mac_address": "2c:c2:60:01:02:02",
+        "ipv4_address": "192.0.2.101",
+        "ipv6_address": "fe80::2ec2:60ff:fe01:202%ens3",
+        "has_carrier": true,
+        "lldp": null,
+        "vendor": "0x1af4",
+        "product": "0x0001",
+        "client_id": null,
+        "biosdevname": null
+      },
+      {
+        "name": "ens8",
+        "mac_address": "fa:16:3e:00:e7:6a",
+        "ipv4_address": "10.0.0.201",
+        "ipv6_address": "fe80::18a9:bc12:117e:20f6%ens8",
+        "has_carrier": true,
+        "lldp": null,
+        "vendor": "0x1af4",
+        "product": "0x0001",
+        "client_id": null,
+        "biosdevname": null
+      },
+<omitted>
+----
+

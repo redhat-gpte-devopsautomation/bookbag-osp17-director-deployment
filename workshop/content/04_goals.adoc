@@ -27,7 +27,7 @@
 :markup-in-source: verbatim,attributes,quotes
 :show_solution: true
 :catalog_name: OpenShift 4 Advanced Infra Deploy ILT
-:course_name: Advanced Red Hat OpenShift Container Platform Deployment and Management
+:course_name: Red Hat OpenStack 17
 :opentlc_portal: link:https://labs.opentlc.com/[OPENTLC lab portal^]
 :opentlc_account_management: link:https://www.opentlc.com/account/[OPENTLC Account Management page^]
 :opentlc_catalog_name: OPENTLC OpenShift 4 Labs
@@ -36,7 +36,6 @@
 
 == Goals
 
-* Create container registry
-* Mirror container images
-* Generate OpenShift install artifacts
-* Deploy OpenShift 4 on AWS
+* Obtain overcloud images
+* Upload the overcloud images to the undercloud node
+* Review the local image registry

@@ -1,0 +1,147 @@
+:GUID: %guid%
+:OSP_DOMAIN: %dns_zone%
+:GITLAB_URL: %gitlab_url%
+:GITLAB_USERNAME: %gitlab_username%
+:GITLAB_PASSWORD: %gitlab_password%
+:GITLAB_HOST: %gitlab_hostname%
+:TOWER_URL: %tower_url%
+:TOWER_ADMIN_USER: %tower_admin_user%
+:TOWER_ADMIN_PASSWORD: %tower_admin_password%
+:SSH_COMMAND: %ssh_command%
+:SSH_PASSWORD: %ssh_password%
+:VSCODE_UI_URL: %vscode_ui_url%
+:VSCODE_UI_PASSWORD: %vscode_ui_password%
+:organization_name: Default
+:gitlab_project: ansible/gitops-lab
+:project_prod: Project gitOps - Prod
+:project_test: Project gitOps - Test
+:inventory_prod: GitOps inventory - Prod Env
+:inventory_test: GitOps inventory - Test Env
+:credential_machine: host_credential
+:credential_git: gitlab_credential
+:credential_git_token: gitlab_token 
+:credential_openstack: cloud_credential
+:jobtemplate_prod: App deployer - Prod Env
+:jobtemplate_test: App deployer - Test Env
+:source-linenums-option:        
+:markup-in-source: verbatim,attributes,quotes
+:show_solution: true
+:catalog_name: OpenShift 4 Advanced Infra Deploy ILT
+:course_name: Red Hat OpenStack 17
+:opentlc_portal: link:https://labs.opentlc.com/[OPENTLC lab portal^]
+:opentlc_account_management: link:https://www.opentlc.com/account/[OPENTLC Account Management page^]
+:opentlc_catalog_name: OPENTLC OpenShift 4 Labs
+:opentlc_catalog_item_name_aws: OpenShift 4 Advanced Infra Deploy ILT
+:ocp4_docs: link:https://docs.openshift.com/container-platform/4.11/welcome/index.html[OpenShift Container Platform Documentation]
+
+== Deploy Overcloud
+
+. Deploy the configuration file describing the network deployment for overcloud.
+
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack overcloud network provision --output /home/stack/templates/overcloud-networks-deployed.yaml templates/network_data.yaml
+----
+
+. Run the provisioning command, specifying the  /home/stack/templates/nodes.yaml file and defining an output file with the --output option:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack overcloud node provision --network-config  --output templates/baremetal_environment.yaml /home/stack/templates/nodes.yaml
+----
+
+. Create the overcloud network Virtual IPs and generate the /home/stack/templates/overcloud-vip-deployed.yaml which will be used as an environment file when deploying the overcloud.
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack overcloud network vip provision --output /home/stack/templates/overcloud-vip-deployed.yaml /home/stack/templates/vip_data.yaml --stack overcloud-vips
+----
+
+. To generate the templates, run:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ /usr/share/openstack-tripleo-heat-templates/tools/process-templates.py       -p /usr/share/openstack-tripleo-heat-templates       -r ~/templates/roles_data.yaml       -n ~/templates/network_data.yaml       -o ~/generated-openstack-tripleo-heat-templates --safe
+----
+Now the temporary directory ~/generated-openstack-tripleo-heat-templates contains the generated template files according to provided role and network data. 
+
+. To deploy with network isolation and include the network environment file, use the -e and -n parameters with the openstack overcloud deploy command. 
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ openstack overcloud deploy --templates -n templates/network_data.yaml -e templates/overcloud-networks-deployed.yaml -e templates/baremetal_environment.yaml   -e containers-prepare-parameter.yaml   -e /home/stack/generated-openstack-tripleo-heat-templates/environments/network-environment.yaml -e /home/stack/generated-openstack-tripleo-heat-templates/environments/net-multiple-nics.yaml  -e /home/stack/templates/overcloud-vip-deployed.yaml
+----
+
+
+. As the `stack` user, create a script containing the `overcloud deploy` command with all of the necessary options:
+
+* After the `stack` is created, Ansible^(R)^ Playbooks configure the servers on the overcloud.
+
+. After successful deployment of the overcloud, locate the following file under the `stack` user's home directory:
++
+[cols="1,2",caption="",options="header"]
+|===============
+| File Name | Description
+| `overcloudrc` | Environment variables allowing access to overcloud
+|===============
+
+== Review Deployment
+
+. In OSP17, there is no longer a Nova service running on the Undercloud. Instead, we leverage Ironic directly to provision our overcloud nodes. We use the Metalsmith tool to achieve this:
+https://docs.openstack.org/metalsmith/latest/
+
+. To get a list of all deployed servers and their IP addresses; as would have previously been provided by openstack server list, you can now use metalsmith list.
+
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ metalsmith list
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
++---------------------+----------------+---------+
+| ID                                   | Name                    | Status | Networks            | Image          | Flavor  |
++--------------------------------------+-------------------------+--------+---------------------+----------------+---------+
+| 11392bf7-daf9-4374-950b-262fd6340d54 | overcloud-controller-1  | ACTIVE | ctlplane=192.0.2.11 | overcloud-full | control |
+| fd92ed8f-3c2a-486c-b529-b3f9a292f83e | overcloud-novacompute-1 | ACTIVE | ctlplane=192.0.2.13 | overcloud-full | compute |
+| 04071fa2-3111-4c76-a513-63942a939b2e | overcloud-controller-2  | ACTIVE | ctlplane=192.0.2.17 | overcloud-full | control |
+| 70f13e49-ec4a-4203-837f-8cebd82c7704 | overcloud-controller-0  | ACTIVE | ctlplane=192.0.2.9  | overcloud-full | control |
+| 4e30c7d0-c06f-436b-9997-b0dcd1bd2b2f | overcloud-novacompute-0 | ACTIVE | ctlplane=192.0.2.23 | overcloud-full | compute |
++--------------------------------------+-------------------------+--------
+----
+* Note that you have a working overcloud, but it is not yet configured to host end-user projects.
+
+. Verify that you can log in to the overcloud nodes as the `heat-admin` user:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ ssh heat-admin@<node IP address listed in the above command>
+----
+
+. Review the running overcloud compute services:
++
+[source,sh]
+----
+(undercloud) [stack@undercloud ~]$ source ~/overcloudrc
+(overcloud) [stack@undercloud ~]$ openstack compute service list
+----
++
+.Sample Output
+[source,texinfo,options="nowrap"]
+----
++----------------------------+
+| ID                                   | Binary         | Host                                | Zone     | Status  | State | Updated At                 |
++--------------------------------------+----------------+-------------------------------------+----------+---------+-------+----------------------------+
+| da8faef6-da98-42bf-b93d-1eb98a877570 | nova-conductor | overcloud-controller-2.localdomain  | internal | enabled | up    | 2020-02-25T13:16:09.000000 |
+| 82b2506b-f723-4825-92f5-dcce83fafaa1 | nova-conductor | overcloud-controller-1.localdomain  | internal | enabled | up    | 2020-02-25T13:16:09.000000 |
+| e7f61950-dde8-4ac0-9657-d899dab20636 | nova-conductor | overcloud-controller-0.localdomain  | internal | enabled | up    | 2020-02-25T13:16:07.000000 |
+| 67b80698-23bb-4d02-97a2-dedaaa2b09e4 | nova-scheduler | overcloud-controller-2.localdomain  | internal | enabled | up    | 2020-02-25T13:16:05.000000 |
+| b2a6b77c-702c-4c13-bf17-863751c28607 | nova-scheduler | overcloud-controller-1.localdomain  | internal | enabled | up    | 2020-02-25T13:16:05.000000 |
+| 4e9a9f08-2b0e-4e51-b319-78fd6f20e382 | nova-scheduler | overcloud-controller-0.localdomain  | internal | enabled | up    | 2020-02-25T13:16:10.000000 |
+| 76c41007-dcd2-4ff7-b4b8-eb2cff5e025a | nova-compute   | overcloud-novacompute-1.localdomain | nova     | enabled | up    | 2020-02-25T13:16:08.000000 |
+| 35b90ad1-dcf8-43e1-8e9b-aab32e6f6bde | nova-compute   | overcloud-novacompute-0.localdomain | nova     | enabled | up    | 2020-02-25T13:16:08.000000 |
++--------------------------------------+----------------+-------------------------------------+----------+---------+-------
+----
