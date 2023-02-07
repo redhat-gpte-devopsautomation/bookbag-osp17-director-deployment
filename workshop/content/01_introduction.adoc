@@ -1,0 +1,18 @@
+
+== Introduction
+
+Red Hat Openstack 17 is based on the OpenStack "Wallaby" release. It includes additional features, known issues, and resolved issues specific to Red Hat OpenStack Platform.
+
+This lab describes how to deploy Red Hat Openstack 17 for proof-of-concept (non-production) purposes. 
+
+== Overview
+
+In this hands on lab you will:
+
+* Perform undercloud Installation
+* Configure overcloud and container Images
+* Perform overcloud deployment preparation
+* Perform overcloud templates Preparation
+* Perform overcloud deployment
+
+

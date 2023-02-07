@@ -26,16 +26,14 @@
 :source-linenums-option:        
 :markup-in-source: verbatim,attributes,quotes
 :show_solution: true
-:catalog_name: OpenShift 4 Advanced Infra Deploy ILT
-:course_name: Red Hat OpenStack 17
-:opentlc_portal: link:https://labs.opentlc.com/[OPENTLC lab portal^]
-:opentlc_account_management: link:https://www.opentlc.com/account/[OPENTLC Account Management page^]
-:opentlc_catalog_name: OPENTLC OpenShift 4 Labs
-:opentlc_catalog_item_name_aws: OpenShift 4 Advanced Infra Deploy ILT
-:ocp4_docs: link:https://docs.openshift.com/container-platform/4.11/welcome/index.html[OpenShift Container Platform Documentation]
+:catalog_name: Deploy Red Hat Openstack 17
 
-== Goals
+== Provision the lab
 
-* Obtain overcloud images
-* Upload the overcloud images to the undercloud node
-* Review the local image registry
+In this section, you will order the lab for the upcoming exercises. You have already ordered the lab, you may skip this page.
+
+. Login to https://demo.redhat.com and navigate to catalog and search for *{catalog_name}*. Select it, you will see a sidebar with a order button, select the order button.
+
+. After provisioning is complete you'll get an email with the login details. The subject of the email would be: *RHDP service {catalog_name} <guid> is ready*. 
+
+. You are now ready to follow through the exercises and deploy Red Hat Openstack 17 on RHEL.

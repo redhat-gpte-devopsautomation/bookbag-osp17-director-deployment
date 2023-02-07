@@ -1,25 +1,23 @@
 ---
 modules:
-  01_goals:
-    name: OpenShift UPI Offline AWS
+  01_introduction:
+    name: Deploy Red Hat Openstack 17
     exit_sign: Provision Lab Environment
-  02_provision_lab:
+  02_order_lab:
     name: Provision Lab Environment
-    exit_sign: Overview
-  03_overview:
-    name: Overview
-    exit_sign: Restricted Network
-  04_restricted_network:
-    name: Restricted Network
-    exit_sign: Environment Overview
-  05_environment_overview:
-    name: Environment Overview
-    exit_sign: Prepare Environment
-  06_prepare_environment:
-    name: Prepare Environment
-    exit_sign: OpenShift Installation
-  07_openshift_installation:
-    name: OpenShift Installation
-    exit_sign: Appendicies
-  08_appendicies:
-    name: Appendicies
+    exit_sign: Deploy Undercloud
+  03_Undercloud_Installation_Lab:
+    name: Deploy Undercloud
+    exit_sign: Overcloud and Container Images
+  04_Overcloud_and_Container_Images_Lab:
+    name: Overcloud and Container Images
+    exit_sign: Overcloud Deployment Preparation Lab
+  05_Overcloud_Deployment_Preparation_Lab:
+    name: Overcloud Deployment Preparation Lab
+    exit_sign: Overcloud Templates Preparation Lab
+  06_Overcloud_Templates_Preparation_Lab:
+    name: Overcloud Templates Preparation Lab
+    exit_sign: Overcloud Deployment Lab
+  07_Overcloud_Deployment_Lab:
+    name: Overcloud Deployment Lab
+    
