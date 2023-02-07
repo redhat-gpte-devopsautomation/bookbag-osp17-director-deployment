@@ -1,39 +1,3 @@
-:GUID: %guid%
-:OSP_DOMAIN: %dns_zone%
-:GITLAB_URL: %gitlab_url%
-:GITLAB_USERNAME: %gitlab_username%
-:GITLAB_PASSWORD: %gitlab_password%
-:GITLAB_HOST: %gitlab_hostname%
-:TOWER_URL: %tower_url%
-:TOWER_ADMIN_USER: %tower_admin_user%
-:TOWER_ADMIN_PASSWORD: %tower_admin_password%
-:SSH_COMMAND: %ssh_command%
-:SSH_PASSWORD: %ssh_password%
-:VSCODE_UI_URL: %vscode_ui_url%
-:VSCODE_UI_PASSWORD: %vscode_ui_password%
-:organization_name: Default
-:gitlab_project: ansible/gitops-lab
-:project_prod: Project gitOps - Prod
-:project_test: Project gitOps - Test
-:inventory_prod: GitOps inventory - Prod Env
-:inventory_test: GitOps inventory - Test Env
-:credential_machine: host_credential
-:credential_git: gitlab_credential
-:credential_git_token: gitlab_token 
-:credential_openstack: cloud_credential
-:jobtemplate_prod: App deployer - Prod Env
-:jobtemplate_test: App deployer - Test Env
-:source-linenums-option:        
-:markup-in-source: verbatim,attributes,quotes
-:show_solution: true
-:catalog_name: OpenShift 4 Advanced Infra Deploy ILT
-:course_name: Red Hat OpenStack 17
-:opentlc_portal: link:https://labs.opentlc.com/[OPENTLC lab portal^]
-:opentlc_account_management: link:https://www.opentlc.com/account/[OPENTLC Account Management page^]
-:opentlc_catalog_name: OPENTLC OpenShift 4 Labs
-:opentlc_catalog_item_name_aws: OpenShift 4 Advanced Infra Deploy ILT
-:ocp4_docs: link:https://docs.openshift.com/container-platform/4.11/welcome/index.html[OpenShift Container Platform Documentation]
-
 == Connect to Undercloud Node
 
 In this section, you log in to the workstation VM, distribute your SSH key to the undercloud node, and verify that you can connect to the undercloud node.

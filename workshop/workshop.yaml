@@ -1,13 +1,12 @@
 ---
-name: OpenShift UPI Offline AWS
+name: Cloud Deployment with Red Hat OpenStack Platform 17 Director (RHOSP17)
 modules:
   activate:
-    -  01_goals
-    -  02_provision_lab    
-    -  03_overview
-    -  04_restricted_network
-    -  05_environment_overview
-    -  06_prepare_environment
-    -  07_openshift_installation
-    -  08_appendicies
+    -  01_introduction
+    -  02_order_lab    
+    -  03_Undercloud_Installation_Lab
+    -  04_Overcloud_and_Container_Images_Lab
+    -  05_Overcloud_Deployment_Preparation_Lab
+    -  06_Overcloud_Templates_Preparation_Lab
+    -  07_Overcloud_Deployment_Lab
     
