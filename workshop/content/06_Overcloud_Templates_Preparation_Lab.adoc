@@ -174,7 +174,7 @@ Red Hat OpenStack Platform 17 director provides a tool to generate environment f
 +
 [source,sh]
 ----
-(undercloud) [stack@undercloud ~]$ cp $THT/roles_data.yaml ~/templates/
+(undercloud) [stack@undercloud ~]$ cp $THT/network_data.yaml ~/templates
 ----
 
 . Review the `network_data.yaml` file:
