@@ -20,20 +20,20 @@ The `workstation` node serves as a jumpbox to the rest of the environment.
 +
 [source,sh]
 ----
-[cloud-user@workstation ~]$ ssh-keygen
+[your-account@workstation ~]$ ssh-keygen
 ----
 +
 .Sample Output
 [source,texinfo]
 ----
 Generating public/private rsa key pair.
-Enter file in which to save the key (/home/cloud-user/.ssh/id_rsa): 
+Enter file in which to save the key (/home/your-account/.ssh/id_rsa): 
 Enter passphrase (empty for no passphrase): 
 Enter same passphrase again: 
-Your identification has been saved in /home/cloud-user/.ssh/id_rsa
-Your public key has been saved in /home/cloud-user/.ssh/id_rsa.pub
+Your identification has been saved in /home/your-account/.ssh/id_rsa
+Your public key has been saved in /home/your-account/.ssh/id_rsa.pub
 The key fingerprint is:
-SHA256:I85+wcJm0ouFdjD5BiIxl7u88kSMwOEOyW4iLSkX5B0 cloud-user@workstation
+SHA256:I85+wcJm0ouFdjD5BiIxl7u88kSMwOEOyW4iLSkX5B0 your-account@workstation
 The key's randomart image is:
 +---[RSA 3072]----+
 | ...E            |
@@ -52,13 +52,13 @@ The key's randomart image is:
 +
 [source,sh]
 ----
-[cloud-user@workstation ~]$ ssh-copy-id root@undercloud.example.com
+[your-account@workstation ~]$ ssh-copy-id root@undercloud.example.com
 ----
 +
 .Sample Output
 [source,texinfo]
 ----
-/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/cloud-user/.ssh/id_rsa.pub"
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/your-account/.ssh/id_rsa.pub"
 /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
 /usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
 root@undercloud.example.com's password: 
@@ -75,7 +75,7 @@ and check to make sure that only the key(s) you wanted were added.
 +
 [source,sh]
 ----
-[cloud-user@workstation ~]$ ssh root@undercloud.example.com
+[your-account@workstation ~]$ ssh root@undercloud.example.com
 ----
 
 == Test Network Connectivity and Settings
@@ -242,7 +242,7 @@ passwd: all authentication tokens updated successfully.
 +
 [source,sh]
 ----
-[cloud-user@workstation ~]$ ssh stack@undercloud.example.com
+[your-account@workstation ~]$ ssh stack@undercloud.example.com
 ----
 
 . Verify that the `stack` user can invoke the `sudo` command:
