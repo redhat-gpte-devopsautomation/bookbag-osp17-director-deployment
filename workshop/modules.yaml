@@ -2,9 +2,6 @@
 modules:
   01_introduction:
     name: Cloud Deployment with Red Hat OpenStack Platform 17 Director (RHOSP17)
-    exit_sign: Provision Lab Environment
-  02_order_lab:
-    name: Provision Lab Environment
     exit_sign: Deploy Undercloud
   03_Undercloud_Installation_Lab:
     name: Deploy Undercloud
