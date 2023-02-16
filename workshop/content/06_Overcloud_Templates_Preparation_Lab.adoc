@@ -167,14 +167,7 @@ Red Hat OpenStack Platform 17 director provides a tool to generate environment f
 +
 [source,sh]
 ----
-(undercloud) [stack@undercloud ~]$ cp $THT/network-data-samples/vip-data-default-network-isolation.yaml ~/templates/vip_data.yaml
-----
-
-. Copy the default `network_data.yaml` files from `$THT` to a local directory:
-+
-[source,sh]
-----
-(undercloud) [stack@undercloud ~]$ cp $THT/network_data.yaml ~/templates
+(undercloud) [stack@undercloud ~]$ cp $THT/network-data-samples/default-network-isolation.yaml ~/templates/network_data.yaml
 ----
 
 . Review the `network_data.yaml` file:
