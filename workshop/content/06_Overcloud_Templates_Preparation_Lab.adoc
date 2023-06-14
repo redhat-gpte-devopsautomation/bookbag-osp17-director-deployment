@@ -2,13 +2,13 @@
 
 The undercloud includes a set of TripleO Heat templates that acts as a plan for your overcloud creation. You can customize aspects of the overcloud using environment files, which are YAML-formatted files that override parameters and resources in the core Heat template collection. You can include as many environment files as necessary. However, the order of the environment files is important because the parameters and resources defined in subsequent environment files take precedence. Use the following list as an example of the environment file order:
 
-* The environment file specifying the number of nodes per role and their flavors. It is vital to include this information for overcloud creation.
+* The environment file specifying the number of nodes per role, their flavors and network settings. It is vital to include this information for overcloud creation.
 
 * The environment file specifying the location of the container images for containerized OpenStack^(R)^ services. This is the file similar to the one you created previously in the _Overcloud and Container Images Lab_.
 
 * Network configuration environment files:
 
-** Start with the network initialization file (`environments/network-isolation.yaml`) from the TripleO Heat template collection if you plan to implement network isolation in your overcloud. The core TripleO Heat template collection contains Jinja2 templates that are used to generate this file dynamically during the deployment. Do not be surprised if this file is not present in the `/usr/share/openstack-tripleo-heat-templates` directory. Just include the file into your deployment plan.
+** Start with the network initialization file (`default-network-isolation.yaml`) from the TripleO Heat template collection if you plan to implement network isolation in your overcloud. The core TripleO Heat template collection contains Jinja2 templates that are used to generate this file dynamically during the deployment. Do not be surprised if this file is not present in the `/usr/share/openstack-tripleo-heat-templates` directory. Just include the file into your deployment plan.
 ** Follow with a network environment file with the registry of the NIC configuration templates for different roles and any additional network parameters such as VLANs, IPv4, and IPv6 subnets.
 
 * Any extra files that may be necessary in the advanced deployments, such as:
@@ -20,10 +20,7 @@ The undercloud includes a set of TripleO Heat templates that acts as a plan for 
 
 Some of the core Heat templates for the overcloud are in the Jinja2 format. Red Hat OpenStack Platform director renders them to Heat environment files in the YAML format at the beginning of the overcloud deployment, using roles and network parameters. The default values for these parameters are provided in the `roles_data.yaml` and `network_data.yaml` files. You use them as starting points for customization.
 
-You can use this lab environment to experiment with different OpenStack deployment scenarios. The instructions included in this lab cover only one of them with _Open Virtual Networking (OVN) and Distributed Virtual Routing (DVR) with High Availability (HA)_. This is the default scenario on Red Hat OpenStack Platform 17.0.
-
-[IMPORTANT]
-A basic overcloud uses local LVM storage for block storage, which is not a supported configuration. It is recommended that you use an external storage solution, such as _Red Hat Ceph Storage_ for block storage, but the lab environment does not provide these resources.
+You can use this lab environment to experiment with different OpenStack deployment scenarios.
 
 == Prepare Environment Files for Overcloud Deployment
 
@@ -172,7 +169,7 @@ A basic overcloud uses local LVM storage for block storage, which is not a suppo
 +
 [source,sh]
 ----
-(undercloud) [stack@undercloud ~]$ egrep -v '^#|^$' templates/network_data.yaml
+(undercloud) [stack@undercloud ~]$ egrep -v '^#|^$' ~/templates/network_data.yaml
 ----
 +
 .Sample Output
