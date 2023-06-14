@@ -27,7 +27,7 @@ A basic overcloud uses local LVM storage for block storage, which is not a suppo
 
 == Prepare Environment Files for Overcloud Deployment
 
-. Create directories for the environment files and Heat templates:
+. Create ~/templates directory for the environment files and Heat templates:
 +
 [source,sh]
 ----
