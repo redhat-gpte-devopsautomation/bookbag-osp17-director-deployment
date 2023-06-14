@@ -163,7 +163,7 @@ Red Hat OpenStack Platform 17 director provides a tool to generate environment f
 (undercloud) [stack@undercloud ~]$ THT=/usr/share/openstack-tripleo-heat-templates
 ----
 
-. Copy the default `network_data.yaml` files from `$THT` to a local directory:
+. Copy the default `default-network-isolation.yaml` files from `$THT` to ~/templates/network_data.yaml:
 +
 [source,sh]
 ----
