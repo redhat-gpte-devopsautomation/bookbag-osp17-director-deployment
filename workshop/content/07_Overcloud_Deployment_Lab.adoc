@@ -36,42 +36,6 @@ Now the temporary directory ~/generated-openstack-tripleo-heat-templates contain
 ----
 (undercloud) [stack@undercloud ~]$ openstack overcloud deploy --templates -n templates/network_data.yaml -e templates/overcloud-networks-deployed.yaml -e templates/baremetal_environment.yaml   -e containers-prepare-parameter.yaml   -e /home/stack/generated-openstack-tripleo-heat-templates/environments/network-environment.yaml -e /home/stack/generated-openstack-tripleo-heat-templates/environments/net-multiple-nics.yaml  -e /home/stack/templates/overcloud-vip-deployed.yaml
 ----
-
-
-. As the `stack` user, create a script containing the `overcloud deploy` command with all of the necessary options:
-+
-.Sample `deploy.sh` Script
-[source,texinfo,options="nowrap"]
-----
-#!/bin/bash
-THT=/usr/share/openstack-tripleo-heat-templates/
-CNF=/home/stack/templates/
-openstack overcloud deploy --templates $THT \
--r $CNF/roles_data.yaml \
--n $CNF/network_data.yaml \
--e ~/containers-prepare-parameter.yaml \
--e $CNF/environments/node-info.yaml \
--e $THT/environments/network-isolation.yaml \
--e $CNF/environments/network-environment.yaml \
--e $CNF/environments/ips-from-pool-all.yaml \
--e $CNF/scheduler-hints.yaml \
--e $CNF/environments/fix-nova-reserved-host-memory.yaml
-----
-
-. Make the script executable:
-+
-[source,sh]
-----
-(undercloud) [stack@undercloud ~]$ chmod 755 deploy.sh
-----
-
-. Run the script from the undercloud node:
-+
-[source,sh]
-----
-(undercloud) [stack@undercloud ~]$ ./deploy.sh
-----
-* This initiates overcloud deployment according to the supplied environment files and templates.
 +
 NOTE: The deployment takes approximately an hour.
 
