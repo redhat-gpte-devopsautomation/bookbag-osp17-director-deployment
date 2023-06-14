@@ -20,7 +20,7 @@ The undercloud includes a set of TripleO Heat templates that acts as a plan for 
 
 Some of the core Heat templates for the overcloud are in the Jinja2 format. Red Hat OpenStack Platform director renders them to Heat environment files in the YAML format at the beginning of the overcloud deployment, using roles and network parameters. The default values for these parameters are provided in the `roles_data.yaml` and `network_data.yaml` files. You use them as starting points for customization.
 
-You can use this lab environment to experiment with different OpenStack deployment scenarios. The instructions included in this lab cover only one of them with _Open Virtual Networking (OVN) and Distributed Virtual Routing (DVR) with High Availability (HA)_. This is the default scenario on Red Hat OpenStack Platform 16.
+You can use this lab environment to experiment with different OpenStack deployment scenarios. The instructions included in this lab cover only one of them with _Open Virtual Networking (OVN) and Distributed Virtual Routing (DVR) with High Availability (HA)_. This is the default scenario on Red Hat OpenStack Platform 17.0.
 
 [IMPORTANT]
 A basic overcloud uses local LVM storage for block storage, which is not a supported configuration. It is recommended that you use an external storage solution, such as _Red Hat Ceph Storage_ for block storage, but the lab environment does not provide these resources.
