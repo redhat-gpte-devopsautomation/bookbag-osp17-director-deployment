@@ -27,14 +27,14 @@ A basic overcloud uses local LVM storage for block storage, which is not a suppo
 
 == Prepare Environment Files for Overcloud Deployment
 
-. Create ~/templates directory for the environment files and Heat templates:
+. Create ~/templates directory for the Heat templates:
 +
 [source,sh]
 ----
 (undercloud) [stack@undercloud ~]$ mkdir -p ~/templates
 ----
 
-. Prepare a custom environment file specifying the number of nodes per role and their flavors named `/home/stack/templates/nodes.yaml` :
+. Prepare a custom environment file specifying the number of nodes per role and their network settings named `/home/stack/templates/nodes.yaml` :
 +
 [source,texinfo]
 ----
@@ -152,8 +152,6 @@ A basic overcloud uses local LVM storage for block storage, which is not a suppo
 
 == Create Custom Network Environment File
 
-Red Hat OpenStack Platform 17 director provides a tool to generate environment files and sample NIC configuration templates using data from `network_data.yaml` files. In this section, you see how to use this tool.
-
 === Customize Network Data
 
 . For convenience, define the `THT` shell variable as a path to the TripleO Heat templates directory:
@@ -240,16 +238,14 @@ Red Hat OpenStack Platform 17 director provides a tool to generate environment f
 
 === Generate Environment Files
 
-In this section, you use a tool to process the core TripleO Heat template collection to produce environment files:
-
-. Copy the TripleO Heat template's  vip-data-default-network-isolation.yaml to home/stack/templates/vip_data.yaml:
+. Copy the TripleO Heat template's vip-data-default-network-isolation.yaml to home/stack/templates/vip_data.yaml:
 +
 [source,sh]
 ----
 (undercloud) [stack@undercloud ~]$ cp $THT/network-data-samples/vip-data-default-network-isolation.yaml ~/templates/vip_data.yaml
 ----
 
-. Copy the TripleO Heat template's roles_data.yaml to home/stack/templates/:
+. Copy the TripleO Heat template's roles_data.yaml to ~/templates/:
 +
 [source,sh]
 ----
