@@ -210,7 +210,7 @@ In this section, you create a non-root user, which is required by Red Hat^(R)^ O
 stack ALL=(root) NOPASSWD:ALL
 ----
 
-. Set `root` user's password to "r3dh4t1!":
+. Set `stack` users password to "r3dh4t1!":
 +
 [source,sh]
 ----
