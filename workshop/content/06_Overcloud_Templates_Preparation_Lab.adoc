@@ -249,7 +249,7 @@ In this section, you use a tool to process the core TripleO Heat template collec
 (undercloud) [stack@undercloud ~]$ cp $THT/network-data-samples/vip-data-default-network-isolation.yaml ~/templates/vip_data.yaml
 ----
 
-. Copy the TripleO Heat template's roles_data.yaml to home/stack/templates/vip_data.yaml:
+. Copy the TripleO Heat template's roles_data.yaml to home/stack/templates/:
 +
 [source,sh]
 ----
