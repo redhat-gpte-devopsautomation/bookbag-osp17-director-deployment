@@ -235,7 +235,7 @@ You can use this lab environment to experiment with different OpenStack deployme
 
 === Generate Environment Files
 
-. Copy the TripleO Heat template's vip-data-default-network-isolation.yaml to home/stack/templates/vip_data.yaml:
+. Copy the TripleO Heat template's vip-data-default-network-isolation.yaml to ~/templates/vip_data.yaml:
 +
 [source,sh]
 ----
