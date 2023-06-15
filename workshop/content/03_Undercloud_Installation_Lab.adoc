@@ -2,14 +2,14 @@
 
 In this section, you log in to the workstation VM, distribute your SSH key to the undercloud node, and verify that you can connect to the undercloud node.
 
-. Log in to your workstation VM using your OPENTLC credentials and the hostname or IP address specified in the email message from OPENTLC:
+. Log in to your workstation VM using your the credentials displayed in "Services" tab in http://demo.redhat.com account or in the email message received after the lab is launched. Eg:
 +
 [source,sh]
 ----
-$ ssh your-account@workstation.GUID.dynamic.opentlc.com
+$ ssh xxxx-user@workstation.xxxx.dynamic.opentlc.com
+xxxx-user@workstation.xxxx.dynamic.opentlc.com's password: XXXXXX
 ----
-* The message includes a GUID--a unique four-character identifier generated for your lab environment.
-* Whenever you see "GUID" or "$GUID" in a command, make sure to replace it with your GUID.
+
 +
 [NOTE]
 ====
