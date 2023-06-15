@@ -30,7 +30,7 @@
 
 == Provision the lab
 
-In this section, you will order the lab for the upcoming exercises. You have already ordered the lab, you may skip this page.
+In this section, you will order the lab for the upcoming exercises. If you have already ordered the lab, you may skip this page.
 
 . Login to https://demo.redhat.com and navigate to catalog and search for *{catalog_name}*. Select it, you will see a sidebar with a order button, select the order button.
 
