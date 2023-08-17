@@ -207,9 +207,9 @@ During the `openstack undercloud install` step, the `undercloud` server is used 
 .Sample Output
 [source,texinfo,options="nowrap"]
 ----
-2022-11-24 06:24:14,557 14706 INFO tripleo_common.image.image_uploader [  ] [classroom.example.com/rhosp-rhel9/openstack-ironic-api:17.0] Completed upload for image
-2022-11-24 06:24:14,934 14706 INFO tripleo_common.image.image_uploader [  ] [classroom.example.com/rhosp-rhel9/openstack-heat-all:17.0] Completed upload for image
-2022-11-24 06:24:15,427 14706 INFO tripleo_common.image.image_uploader [  ] [classroom.example.com/rhosp-rhel9/openstack-ironic-pxe:17.0] Completed upload for image
-2022-11-24 06:24:15,990 14706 INFO tripleo_common.image.image_uploader [  ] [classroom.example.com/rhosp-rhel9/openstack-neutron-server:17.0] Completed upload for image
+2022-11-24 06:24:14,557 14706 INFO tripleo_common.image.image_uploader [  ] [classroom.example.com/rhosp-rhel9/openstack-ironic-api:17.1] Completed upload for image
+2022-11-24 06:24:14,934 14706 INFO tripleo_common.image.image_uploader [  ] [classroom.example.com/rhosp-rhel9/openstack-heat-all:17.1] Completed upload for image
+2022-11-24 06:24:15,427 14706 INFO tripleo_common.image.image_uploader [  ] [classroom.example.com/rhosp-rhel9/openstack-ironic-pxe:17.1] Completed upload for image
+2022-11-24 06:24:15,990 14706 INFO tripleo_common.image.image_uploader [  ] [classroom.example.com/rhosp-rhel9/openstack-neutron-server:17.1] Completed upload for image
 <<OMITTED>>
 ----
