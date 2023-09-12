@@ -19,7 +19,7 @@
 +
 [source,sh]
 ----
-(undercloud) [stack@undercloud ~]$ openstack overcloud network vip provision --output /home/stack/templates/overcloud-vip-deployed.yaml /home/stack/templates/vip_data.yaml --stack overcloud-vips
+(undercloud) [stack@undercloud ~]$ openstack overcloud network vip provision --output /home/stack/templates/overcloud-vip-deployed.yaml /home/stack/templates/vip_data.yaml
 ----
 
 . To generate the templates, run:
